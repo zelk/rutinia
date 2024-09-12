@@ -20,14 +20,14 @@ class GoBackIntent extends Intent {
   const GoBackIntent();
 }
 
-class RoutineListPage extends StatefulWidget {
-  const RoutineListPage({super.key});
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
 
   @override
-  RoutineListPageState createState() => RoutineListPageState();
+  MainPageState createState() => MainPageState();
 }
 
-class RoutineListPageState extends State<RoutineListPage> {
+class MainPageState extends State<MainPage> {
   final TextEditingController _searchController = TextEditingController();
   int _focusedIndex = -1;
   late List<Routine> _routines;
