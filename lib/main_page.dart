@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-// TODO: Make sure that unhandled keys are ignored
+// TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
 // TODO: Make sure that the Tab key and the up/down arrow keys are using the same focus features as right now, the tab based focus can be in one place while the arrow keys focus can be in a different place
 
 class MoveUpIntent extends Intent {
@@ -100,41 +100,37 @@ class MainPageState extends State<MainPage> {
   }
 
   // New methods for handling intents
-  bool _handleMoveUp(MoveUpIntent intent) {
+  void _handleMoveUp(MoveUpIntent intent) {
     if (_focusedIndex >= 0) {
       _moveFocus(-1);
-      return true;
     }
-    return false;
   }
 
-  bool _handleMoveDown(MoveDownIntent intent) {
+  void _handleMoveDown(MoveDownIntent intent) {
     if (_focusedIndex < _filteredRoutines.length - 1) {
       _moveFocus(1);
-      return true;
     }
-    return false;
   }
 
-  bool _handleGoForward(GoForwardIntent intent) {
+  void _handleGoForward(GoForwardIntent intent) {
     if (_searchFocusNode.hasFocus) {
       _moveFocus(1);
     } else {
       _openRoutinePage(_filteredRoutines[_focusedIndex]);
     }
-    return true;
   }
 
-  bool _handleGoBack(GoBackIntent intent) {
-    if (_searchFocusNode.hasFocus) {
-      _searchController.clear();
-      _filterRoutines(''); // Call _filterRoutines with empty string
-    } else if (_focusedIndex != -1) {
+  void _handleGoBack(GoBackIntent intent) {
+    if (_listFocusNode.hasFocus) {
       _searchFocusNode.requestFocus();
-    } else {
-      _goBack();
+    } else if (_searchFocusNode.hasFocus) {
+      if (_searchController.text.isNotEmpty) {
+        _searchController.clear();
+        _filterRoutines('');
+      } else {
+        _goBack();
+      }
     }
-    return true;
   }
 
   void _filterRoutines(String value) {
