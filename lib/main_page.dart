@@ -32,14 +32,16 @@ class MainPage extends StatefulWidget {
 class MainPageState extends State<MainPage> {
   final TextEditingController _searchController = TextEditingController();
   int _focusedIndex = -1;
-  late List<Routine> _routines;
+  late List<Routine> _allRoutines;
+  late List<Routine> _filteredRoutines;
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _listFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _routines = DummyDataGenerator.generateRoutines();
+    _allRoutines = DummyDataGenerator.generateRoutines();
+    _filteredRoutines = _allRoutines;
     _searchFocusNode.addListener(_onFocusChange);
     _listFocusNode.addListener(_onFocusChange);
 
@@ -78,7 +80,7 @@ class MainPageState extends State<MainPage> {
         _searchFocusNode.requestFocus();
       } else {
         _focusedIndex =
-            (_focusedIndex + direction).clamp(0, _routines.length - 1);
+            (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
         _listFocusNode.requestFocus();
       }
     });
@@ -107,7 +109,7 @@ class MainPageState extends State<MainPage> {
   }
 
   bool _handleMoveDown(MoveDownIntent intent) {
-    if (_focusedIndex < _routines.length - 1) {
+    if (_focusedIndex < _filteredRoutines.length - 1) {
       _moveFocus(1);
       return true;
     }
@@ -118,20 +120,30 @@ class MainPageState extends State<MainPage> {
     if (_searchFocusNode.hasFocus) {
       _moveFocus(1);
     } else {
-      _openRoutinePage(_routines[_focusedIndex]);
+      _openRoutinePage(_filteredRoutines[_focusedIndex]);
     }
     return true;
   }
 
   bool _handleGoBack(GoBackIntent intent) {
     if (_searchFocusNode.hasFocus) {
-      _searchController.clear(); // Clear the search field
+      _searchController.clear();
+      _filterRoutines(''); // Call _filterRoutines with empty string
     } else if (_focusedIndex != -1) {
       _searchFocusNode.requestFocus();
     } else {
       _goBack();
     }
     return true;
+  }
+
+  void _filterRoutines(String value) {
+    setState(() {
+      _filteredRoutines = _allRoutines
+          .where((routine) =>
+              routine.name.toLowerCase().contains(value.toLowerCase()))
+          .toList();
+    });
   }
 
   @override
@@ -170,18 +182,16 @@ class MainPageState extends State<MainPage> {
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                     ),
-                    onChanged: (value) {
-                      // TODO: Implement search functionality
-                    },
+                    onChanged: _filterRoutines,
                   ),
                 ),
                 Expanded(
                   child: Focus(
                     focusNode: _listFocusNode,
                     child: ListView.builder(
-                      itemCount: _routines.length,
+                      itemCount: _filteredRoutines.length,
                       itemBuilder: (context, index) {
-                        final routine = _routines[index];
+                        final routine = _filteredRoutines[index];
                         final isFocused = _focusedIndex == index;
                         return ListTile(
                           title: Text(routine.name),
