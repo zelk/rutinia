@@ -16,6 +16,10 @@ class OpenRoutineIntent extends Intent {
   const OpenRoutineIntent();
 }
 
+class GoBackIntent extends Intent {
+  const GoBackIntent();
+}
+
 class RoutineListPage extends StatefulWidget {
   const RoutineListPage({super.key});
 
@@ -27,33 +31,51 @@ class RoutineListPageState extends State<RoutineListPage> {
   final TextEditingController _searchController = TextEditingController();
   int _focusedIndex = -1;
   late List<Routine> _routines;
+  final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _listFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _routines = DummyDataGenerator.generateRoutines();
+    _searchFocusNode.addListener(_onFocusChange);
+    _listFocusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.removeListener(_onFocusChange);
+    _listFocusNode.removeListener(_onFocusChange);
+    _searchFocusNode.dispose();
     _listFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      if (_searchFocusNode.hasFocus) {
+        _focusedIndex = -1;
+      } else if (_listFocusNode.hasFocus && _focusedIndex == -1) {
+        _focusedIndex = 0;
+      }
+    });
   }
 
   void _moveFocus(int direction) {
     setState(() {
       if (_focusedIndex == -1 && direction > 0) {
         _focusedIndex = 0;
+        _listFocusNode.requestFocus();
       } else if (_focusedIndex == 0 && direction < 0) {
         _focusedIndex = -1;
+        _searchFocusNode.requestFocus();
       } else {
         _focusedIndex =
-            (_focusedIndex + direction).clamp(-1, _routines.length - 1);
+            (_focusedIndex + direction).clamp(0, _routines.length - 1);
+        _listFocusNode.requestFocus();
       }
     });
-    _listFocusNode.requestFocus();
   }
 
   void _openRoutinePage(Routine routine) {
@@ -62,58 +84,61 @@ class RoutineListPageState extends State<RoutineListPage> {
       MaterialPageRoute(
         builder: (context) => RoutinePage(routine: routine),
       ),
-    ).then((_) => {
-      setState(() {
-        if (_focusedIndex == -1) {
-          _focusedIndex = 0;
-        }
-      });
-      _listFocusNode.requestFocus();
-    });
+    ).then((_) => _listFocusNode.requestFocus());
+  }
+
+  void _goBack() {
+    Navigator.of(context).maybePop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: <ShortcutActivator, Intent>{
-        LogicalKeySet(LogicalKeyboardKey.arrowUp): const MoveUpIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): const MoveDownIntent(),
-        LogicalKeySet(LogicalKeyboardKey.enter): const OpenRoutineIntent(),
-      },
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          MoveUpIntent: CallbackAction<MoveUpIntent>(
-            onInvoke: (MoveUpIntent intent) {
-              if (_focusedIndex > -1) {
-                _moveFocus(-1);
-                return true;
-              }
-              return null;
-            },
-          ),
-          MoveDownIntent: CallbackAction<MoveDownIntent>(
-            onInvoke: (MoveDownIntent intent) {
-              if (_focusedIndex < _routines.length - 1) {
-                _moveFocus(1);
-                return true;
-              }
-              return null;
-            },
-          ),
-          OpenRoutineIntent: CallbackAction<OpenRoutineIntent>(
-            onInvoke: (OpenRoutineIntent intent) {
-              if (_focusedIndex >= 0) {
-                _openRoutinePage(_routines[_focusedIndex]);
-              } else {
-                Actions.invoke(context, const MoveDownIntent());
-              }
-              return true;
-            },
-          ),
+    return FocusScope(
+      autofocus: true,
+      child: Shortcuts(
+        shortcuts: <ShortcutActivator, Intent>{
+          LogicalKeySet(LogicalKeyboardKey.arrowUp): const MoveUpIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowDown): const MoveDownIntent(),
+          LogicalKeySet(LogicalKeyboardKey.enter): const OpenRoutineIntent(),
+          LogicalKeySet(LogicalKeyboardKey.escape): const GoBackIntent(),
         },
-        child: Focus(
-          focusNode: _listFocusNode,
-          autofocus: true,
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            MoveUpIntent: CallbackAction<MoveUpIntent>(
+              onInvoke: (MoveUpIntent intent) {
+                if (_focusedIndex >= 0) {
+                  _moveFocus(-1);
+                  return null;
+                }
+                return KeyEventResult.ignored;
+              },
+            ),
+            MoveDownIntent: CallbackAction<MoveDownIntent>(
+              onInvoke: (MoveDownIntent intent) {
+                if (_focusedIndex < _routines.length - 1) {
+                  _moveFocus(1);
+                  return null;
+                }
+                return KeyEventResult.ignored;
+              },
+            ),
+            OpenRoutineIntent: CallbackAction<OpenRoutineIntent>(
+              onInvoke: (OpenRoutineIntent intent) {
+                if (_focusedIndex >= 0) {
+                  _openRoutinePage(_routines[_focusedIndex]);
+                } else {
+                  _moveFocus(1);
+                }
+                return null;
+              },
+            ),
+            GoBackIntent: CallbackAction<GoBackIntent>(
+              onInvoke: (GoBackIntent intent) {
+                _goBack();
+                return null;
+              },
+            ),
+          },
           child: Scaffold(
             appBar: AppBar(
               title: const Text('Routines'),
@@ -124,6 +149,7 @@ class RoutineListPageState extends State<RoutineListPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     controller: _searchController,
+                    focusNode: _searchFocusNode,
                     decoration: const InputDecoration(
                       hintText: 'Search routines',
                       prefixIcon: Icon(Icons.search),
@@ -135,20 +161,23 @@ class RoutineListPageState extends State<RoutineListPage> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: _routines.length,
-                    itemBuilder: (context, index) {
-                      final routine = _routines[index];
-                      final isFocused = _focusedIndex == index;
-                      return ListTile(
-                        title: Text(routine.name),
-                        subtitle:
-                            Text('Instances: ${routine.instances.length}'),
-                        tileColor:
-                            isFocused ? Colors.blue.withOpacity(0.1) : null,
-                        onTap: () => _openRoutinePage(routine),
-                      );
-                    },
+                  child: Focus(
+                    focusNode: _listFocusNode,
+                    child: ListView.builder(
+                      itemCount: _routines.length,
+                      itemBuilder: (context, index) {
+                        final routine = _routines[index];
+                        final isFocused = _focusedIndex == index;
+                        return ListTile(
+                          title: Text(routine.name),
+                          subtitle:
+                              Text('Instances: ${routine.instances.length}'),
+                          tileColor:
+                              isFocused ? Colors.blue.withOpacity(0.1) : null,
+                          onTap: () => _openRoutinePage(routine),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
