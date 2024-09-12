@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-// Custom intents
+// TODO: Make sure that unhandled keys are ignored
+// TODO: Make sure that the Tab key and the up/down arrow keys are using the same focus features as right now, the tab based focus can be in one place while the arrow keys focus can be in a different place
+
 class MoveUpIntent extends Intent {
   const MoveUpIntent();
 }
@@ -40,6 +42,10 @@ class MainPageState extends State<MainPage> {
     _routines = DummyDataGenerator.generateRoutines();
     _searchFocusNode.addListener(_onFocusChange);
     _listFocusNode.addListener(_onFocusChange);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_searchFocusNode);
+    });
   }
 
   @override
@@ -109,16 +115,22 @@ class MainPageState extends State<MainPage> {
   }
 
   bool _handleGoForward(GoForwardIntent intent) {
-    if (_focusedIndex >= 0) {
-      _openRoutinePage(_routines[_focusedIndex]);
-    } else {
+    if (_searchFocusNode.hasFocus) {
       _moveFocus(1);
+    } else {
+      _openRoutinePage(_routines[_focusedIndex]);
     }
     return true;
   }
 
   bool _handleGoBack(GoBackIntent intent) {
-    _goBack();
+    if (_searchFocusNode.hasFocus) {
+      _searchController.clear(); // Clear the search field
+    } else if (_focusedIndex != -1) {
+      _searchFocusNode.requestFocus();
+    } else {
+      _goBack();
+    }
     return true;
   }
 
