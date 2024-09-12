@@ -14,15 +14,15 @@ class User {
   });
 }
 
-class Action {
+class RoutineAction {
   final String name;
 
-  Action({required this.name});
+  RoutineAction({required this.name});
 }
 
 class Routine {
   final String name;
-  final List<Action> actions;
+  final List<RoutineAction> actions;
   final List<RoutineInstance> instances;
 
   Routine({
@@ -34,7 +34,7 @@ class Routine {
 
 class ActionInstance {
   final RoutineInstance routineInstance;
-  final Action action;
+  final RoutineAction action;
   final String assigneeUserId;
   final DateTime dueDate;
   String comment;
@@ -91,25 +91,25 @@ class DummyDataGenerator {
       Routine(
         name: 'Morning Routine',
         actions: [
-          Action(name: 'Wake up'),
-          Action(name: 'Brush teeth'),
-          Action(name: 'Eat breakfast'),
+          RoutineAction(name: 'Wake up'),
+          RoutineAction(name: 'Brush teeth'),
+          RoutineAction(name: 'Eat breakfast'),
         ],
       ),
       Routine(
         name: 'Work Routine',
         actions: [
-          Action(name: 'Check emails'),
-          Action(name: 'Team meeting'),
-          Action(name: 'Complete tasks'),
+          RoutineAction(name: 'Check emails'),
+          RoutineAction(name: 'Team meeting'),
+          RoutineAction(name: 'Complete tasks'),
         ],
       ),
       Routine(
         name: 'Evening Routine',
         actions: [
-          Action(name: 'Cook dinner'),
-          Action(name: 'Watch TV'),
-          Action(name: 'Read a book'),
+          RoutineAction(name: 'Cook dinner'),
+          RoutineAction(name: 'Watch TV'),
+          RoutineAction(name: 'Read a book'),
         ],
       ),
     ];
