@@ -108,18 +108,18 @@ class RoutineListPageState extends State<RoutineListPage> {
               onInvoke: (MoveUpIntent intent) {
                 if (_focusedIndex >= 0) {
                   _moveFocus(-1);
-                  return null;
+                  return true;
                 }
-                return KeyEventResult.ignored;
+                return false;
               },
             ),
             MoveDownIntent: CallbackAction<MoveDownIntent>(
               onInvoke: (MoveDownIntent intent) {
                 if (_focusedIndex < _routines.length - 1) {
                   _moveFocus(1);
-                  return null;
+                  return true;
                 }
-                return KeyEventResult.ignored;
+                return false;
               },
             ),
             OpenRoutineIntent: CallbackAction<OpenRoutineIntent>(
@@ -129,13 +129,13 @@ class RoutineListPageState extends State<RoutineListPage> {
                 } else {
                   _moveFocus(1);
                 }
-                return null;
+                return true;
               },
             ),
             GoBackIntent: CallbackAction<GoBackIntent>(
               onInvoke: (GoBackIntent intent) {
                 _goBack();
-                return null;
+                return true;
               },
             ),
           },
