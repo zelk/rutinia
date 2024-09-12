@@ -12,12 +12,12 @@ class MoveDownIntent extends Intent {
   const MoveDownIntent();
 }
 
-class OpenRoutineIntent extends Intent {
-  const OpenRoutineIntent();
-}
-
 class GoBackIntent extends Intent {
   const GoBackIntent();
+}
+
+class GoForwardIntent extends Intent {
+  const GoForwardIntent();
 }
 
 class MainPage extends StatefulWidget {
@@ -108,7 +108,7 @@ class MainPageState extends State<MainPage> {
     return false;
   }
 
-  bool _handleOpenRoutine(OpenRoutineIntent intent) {
+  bool _handleGoForward(GoForwardIntent intent) {
     if (_focusedIndex >= 0) {
       _openRoutinePage(_routines[_focusedIndex]);
     } else {
@@ -130,7 +130,7 @@ class MainPageState extends State<MainPage> {
         shortcuts: <ShortcutActivator, Intent>{
           LogicalKeySet(LogicalKeyboardKey.arrowUp): const MoveUpIntent(),
           LogicalKeySet(LogicalKeyboardKey.arrowDown): const MoveDownIntent(),
-          LogicalKeySet(LogicalKeyboardKey.enter): const OpenRoutineIntent(),
+          LogicalKeySet(LogicalKeyboardKey.enter): const GoForwardIntent(),
           LogicalKeySet(LogicalKeyboardKey.escape): const GoBackIntent(),
         },
         child: Actions(
@@ -138,8 +138,8 @@ class MainPageState extends State<MainPage> {
             MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
             MoveDownIntent:
                 CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
-            OpenRoutineIntent:
-                CallbackAction<OpenRoutineIntent>(onInvoke: _handleOpenRoutine),
+            GoForwardIntent:
+                CallbackAction<GoForwardIntent>(onInvoke: _handleGoForward),
             GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
           },
           child: Scaffold(
