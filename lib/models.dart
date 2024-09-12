@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class User {
   final String userId;
   final String firstName;
@@ -89,46 +87,58 @@ class DummyDataGenerator {
     final users = generateUsers();
     final routines = [
       Routine(
-        name: 'Morning Routine',
+        name: 'Employee Onboarding',
         actions: [
-          RoutineAction(name: 'Wake up'),
-          RoutineAction(name: 'Brush teeth'),
-          RoutineAction(name: 'Eat breakfast'),
+          RoutineAction(name: 'Create user in Active Directory'),
+          RoutineAction(name: 'Create user in Azure AD'),
+          RoutineAction(name: 'Create user in Google Workspace'),
+          RoutineAction(name: 'Leave a welcome message in Slack'),
+          RoutineAction(name: 'Send welcome email to user'),
+          RoutineAction(name: 'Add user to Microsoft Teams'),
+          RoutineAction(name: 'Add user to Zoom'),
+          RoutineAction(name: 'Post about hire on LinkedIn'),
         ],
       ),
       Routine(
-        name: 'Work Routine',
+        name: 'Employee Offboarding',
         actions: [
-          RoutineAction(name: 'Check emails'),
-          RoutineAction(name: 'Team meeting'),
-          RoutineAction(name: 'Complete tasks'),
+          RoutineAction(name: 'Remove user from Active Directory'),
+          RoutineAction(name: 'Remove user from Azure AD'),
+          RoutineAction(name: 'Remove user from Google Workspace'),
+          RoutineAction(name: 'Remove user from Microsoft Teams'),
+          RoutineAction(name: 'Remove user from Zoom'),
+          RoutineAction(name: 'Remove user from LinkedIn'),
+          RoutineAction(name: 'Remove user from Slack'),
+          RoutineAction(name: 'Remove user from email'),
+          RoutineAction(name: 'Remove user from phone'),
+          RoutineAction(name: 'Take care of physical access'),
+          RoutineAction(name: 'Take possession of equipment'),
+          RoutineAction(name: 'Take possession of company car (SUB PROCESS)'),
         ],
       ),
       Routine(
-        name: 'Evening Routine',
+        name: 'MNDA',
         actions: [
-          RoutineAction(name: 'Cook dinner'),
-          RoutineAction(name: 'Watch TV'),
-          RoutineAction(name: 'Read a book'),
+          RoutineAction(name: 'Open bolago.se'),
+          RoutineAction(name: 'Login'),
+          RoutineAction(name: 'Make sure that you\'re on the right company'),
+          RoutineAction(name: 'Find the right document template'),
+          RoutineAction(name: 'Prepare the document'),
+          RoutineAction(name: 'Sign the document'),
         ],
       ),
     ];
 
     for (var routine in routines) {
-      final instances = [
-        RoutineInstance(
-          name: '${routine.name} - Instance 1',
-          routine: routine,
-          dueDate: DateTime.now().add(Duration(days: 1)),
-          actionInstances: [],
-        ),
-        RoutineInstance(
-          name: '${routine.name} - Instance 2',
-          routine: routine,
-          dueDate: DateTime.now().add(Duration(days: 2)),
-          actionInstances: [],
-        ),
-      ];
+      final instances = users
+          .map((user) => RoutineInstance(
+                name: '${user.firstName} ${user.lastName} (${routine.name})',
+                routine: routine,
+                dueDate:
+                    DateTime.now().add(Duration(days: users.indexOf(user) + 1)),
+                actionInstances: [],
+              ))
+          .toList();
 
       for (var instance in instances) {
         instance.actionInstances.addAll(

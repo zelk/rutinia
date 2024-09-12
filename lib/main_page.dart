@@ -186,7 +186,7 @@ class MainPageState extends State<MainPage> {
                         return ListTile(
                           title: Text(routine.name),
                           subtitle:
-                              Text('Instances: ${routine.instances.length}'),
+                              Text('${routine.instances.length} instances'),
                           tileColor:
                               isFocused ? Colors.blue.withOpacity(0.1) : null,
                           onTap: () => _openRoutinePage(routine),
