@@ -27,6 +27,7 @@ class RoutineListPageState extends State<RoutineListPage> {
   final TextEditingController _searchController = TextEditingController();
   int _focusedIndex = -1;
   late List<Routine> _routines;
+  final FocusNode _listFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class RoutineListPageState extends State<RoutineListPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _listFocusNode.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,7 @@ class RoutineListPageState extends State<RoutineListPage> {
             (_focusedIndex + direction).clamp(-1, _routines.length - 1);
       }
     });
+    _listFocusNode.requestFocus();
   }
 
   void _openRoutinePage(Routine routine) {
@@ -59,7 +62,14 @@ class RoutineListPageState extends State<RoutineListPage> {
       MaterialPageRoute(
         builder: (context) => RoutinePage(routine: routine),
       ),
-    );
+    ).then((_) => {
+      setState(() {
+        if (_focusedIndex == -1) {
+          _focusedIndex = 0;
+        }
+      });
+      _listFocusNode.requestFocus();
+    });
   }
 
   @override
@@ -102,6 +112,7 @@ class RoutineListPageState extends State<RoutineListPage> {
           ),
         },
         child: Focus(
+          focusNode: _listFocusNode,
           autofocus: true,
           child: Scaffold(
             appBar: AppBar(
