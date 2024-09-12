@@ -91,6 +91,37 @@ class MainPageState extends State<MainPage> {
     Navigator.of(context).maybePop();
   }
 
+  // New methods for handling intents
+  bool _handleMoveUp(MoveUpIntent intent) {
+    if (_focusedIndex >= 0) {
+      _moveFocus(-1);
+      return true;
+    }
+    return false;
+  }
+
+  bool _handleMoveDown(MoveDownIntent intent) {
+    if (_focusedIndex < _routines.length - 1) {
+      _moveFocus(1);
+      return true;
+    }
+    return false;
+  }
+
+  bool _handleOpenRoutine(OpenRoutineIntent intent) {
+    if (_focusedIndex >= 0) {
+      _openRoutinePage(_routines[_focusedIndex]);
+    } else {
+      _moveFocus(1);
+    }
+    return true;
+  }
+
+  bool _handleGoBack(GoBackIntent intent) {
+    _goBack();
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FocusScope(
@@ -104,40 +135,12 @@ class MainPageState extends State<MainPage> {
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
-            MoveUpIntent: CallbackAction<MoveUpIntent>(
-              onInvoke: (MoveUpIntent intent) {
-                if (_focusedIndex >= 0) {
-                  _moveFocus(-1);
-                  return true;
-                }
-                return false;
-              },
-            ),
-            MoveDownIntent: CallbackAction<MoveDownIntent>(
-              onInvoke: (MoveDownIntent intent) {
-                if (_focusedIndex < _routines.length - 1) {
-                  _moveFocus(1);
-                  return true;
-                }
-                return false;
-              },
-            ),
-            OpenRoutineIntent: CallbackAction<OpenRoutineIntent>(
-              onInvoke: (OpenRoutineIntent intent) {
-                if (_focusedIndex >= 0) {
-                  _openRoutinePage(_routines[_focusedIndex]);
-                } else {
-                  _moveFocus(1);
-                }
-                return true;
-              },
-            ),
-            GoBackIntent: CallbackAction<GoBackIntent>(
-              onInvoke: (GoBackIntent intent) {
-                _goBack();
-                return true;
-              },
-            ),
+            MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
+            MoveDownIntent:
+                CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
+            OpenRoutineIntent:
+                CallbackAction<OpenRoutineIntent>(onInvoke: _handleOpenRoutine),
+            GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
           },
           child: Scaffold(
             appBar: AppBar(
