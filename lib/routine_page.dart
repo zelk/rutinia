@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'models.dart';
 import 'instance_page.dart';
 
+// TODO: Add keyboard shortcuts for the routine page
+// TODO: Add a "+" button that allows the user to add a new instance and how to do keyboard shortcuts for that
+// TODO: Add a way to edit the routine
+// TODO: Add a way to delete the routine
+// TODO: Add a way to duplicate the routine
+// TODO: Add a way to move the routine up or down the list
+// TODO: Add a way to move the routine to a different list
+
 class RoutinePage extends StatelessWidget {
   final Routine routine;
 
@@ -11,13 +19,26 @@ class RoutinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${routine.name} Instances'),
+        title: Text('${routine.name} Routine'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Instances headline
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+            child: Text(
+              'Instances',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           // Search box
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               decoration: const InputDecoration(
                 hintText: 'Search instances',

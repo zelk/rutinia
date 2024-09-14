@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'main_page.dart';
 
+// TODO: Add support for integrating REST APIs somehow, maybe using Swagger?
+// TOOD: Integrate email and a few other things that can be used easily
+
 void main() {
   runApp(const MyApp());
 }

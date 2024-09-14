@@ -5,6 +5,8 @@ import 'routine_page.dart';
 
 // TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
 // TODO: Make sure that the Tab key and the up/down arrow keys are using the same focus features as right now, the tab based focus can be in one place while the arrow keys focus can be in a different place
+// TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
+// TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
 
 class MoveUpIntent extends Intent {
   const MoveUpIntent();
@@ -173,10 +175,11 @@ class MainPageState extends State<MainPage> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Search routines',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: _filterRoutines,
                   ),
