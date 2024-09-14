@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
+// TODO: Break out keybaord shortcuts into a separate file or even a separate widget
+// TODO: The i, j, k and l keys must not overtake the text input in the search text field
 // TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
 // TODO: Make sure that the Tab key and the up/down arrow keys are using the same focus features as right now, the tab based focus can be in one place while the arrow keys focus can be in a different place
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
@@ -22,6 +24,14 @@ class GoBackIntent extends Intent {
 
 class GoForwardIntent extends Intent {
   const GoForwardIntent();
+}
+
+class MoveLeftIntent extends Intent {
+  const MoveLeftIntent();
+}
+
+class MoveRightIntent extends Intent {
+  const MoveRightIntent();
 }
 
 class MainPage extends StatefulWidget {
@@ -135,6 +145,14 @@ class MainPageState extends State<MainPage> {
     }
   }
 
+  void _handleMoveLeft(MoveLeftIntent intent) {
+    // Implement left movement logic if needed
+  }
+
+  void _handleMoveRight(MoveRightIntent intent) {
+    // Implement right movement logic if needed
+  }
+
   void _filterRoutines(String value) {
     setState(() {
       _filteredRoutines = _allRoutines
@@ -151,7 +169,13 @@ class MainPageState extends State<MainPage> {
       child: Shortcuts(
         shortcuts: <ShortcutActivator, Intent>{
           LogicalKeySet(LogicalKeyboardKey.arrowUp): const MoveUpIntent(),
+          LogicalKeySet(LogicalKeyboardKey.keyI): const MoveUpIntent(),
           LogicalKeySet(LogicalKeyboardKey.arrowDown): const MoveDownIntent(),
+          LogicalKeySet(LogicalKeyboardKey.keyK): const MoveDownIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowLeft): const MoveLeftIntent(),
+          LogicalKeySet(LogicalKeyboardKey.keyJ): const MoveLeftIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowRight): const MoveRightIntent(),
+          LogicalKeySet(LogicalKeyboardKey.keyL): const MoveRightIntent(),
           LogicalKeySet(LogicalKeyboardKey.enter): const GoForwardIntent(),
           LogicalKeySet(LogicalKeyboardKey.escape): const GoBackIntent(),
         },
@@ -160,6 +184,10 @@ class MainPageState extends State<MainPage> {
             MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
             MoveDownIntent:
                 CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
+            MoveLeftIntent:
+                CallbackAction<MoveLeftIntent>(onInvoke: _handleMoveLeft),
+            MoveRightIntent:
+                CallbackAction<MoveRightIntent>(onInvoke: _handleMoveRight),
             GoForwardIntent:
                 CallbackAction<GoForwardIntent>(onInvoke: _handleGoForward),
             GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
