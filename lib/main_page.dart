@@ -84,27 +84,24 @@ class MainPageState extends State<MainPage> {
 
   // TODO: Get rid of this method and do everything in e.g. _handleMoveDown
   Object? _moveFocus(int direction) {
-    int fi;
-    Object? result;
-    if (_focusedIndex == -1 && direction > 0) {
-      fi = 0;
-      _listFocusNode.requestFocus();
-      result = true;
-    } else if (_focusedIndex == 0 && direction < 0) {
-      fi = -1;
-      _searchFocusNode.requestFocus();
-      result = true;
-    } else {
-      fi = (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
-      _listFocusNode.requestFocus();
-      result = true;
-    }
-    if (result == true) {
+    if (_focusedIndex == -1 && direction > 0 && _filteredRoutines.isNotEmpty) {
       setState(() {
-        _focusedIndex = fi;
+        _focusedIndex = 0;
       });
+      _listFocusNode.requestFocus();
+    } else if (_focusedIndex == 0 && direction < 0) {
+      setState(() {
+        _focusedIndex = -1;
+      });
+      _searchFocusNode.requestFocus();
+    } else if (_filteredRoutines.isNotEmpty) {
+      setState(() {
+        _focusedIndex =
+            (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
+      });
+      _listFocusNode.requestFocus();
     }
-    return result;
+    return null;
   }
 
   void _openRoutinePage(Routine routine) {
@@ -138,10 +135,11 @@ class MainPageState extends State<MainPage> {
   Object? _handleGoForward(GoForwardIntent intent) {
     if (_searchFocusNode.hasFocus) {
       return _moveFocus(1);
-    } else if (_listFocusNode.hasFocus) {
+    } else if (_listFocusNode.hasFocus && _focusedIndex != -1) {
       _openRoutinePage(_filteredRoutines[_focusedIndex]);
       return true;
     }
+    print("GoForwardIntent: No focus node has focus");
     return null;
   }
 
