@@ -82,20 +82,29 @@ class MainPageState extends State<MainPage> {
     });
   }
 
-  void _moveFocus(int direction) {
-    setState(() {
-      if (_focusedIndex == -1 && direction > 0) {
-        _focusedIndex = 0;
-        _listFocusNode.requestFocus();
-      } else if (_focusedIndex == 0 && direction < 0) {
-        _focusedIndex = -1;
-        _searchFocusNode.requestFocus();
-      } else {
-        _focusedIndex =
-            (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
-        _listFocusNode.requestFocus();
-      }
-    });
+  // TODO: Get rid of this method and do everything in e.g. _handleMoveDown
+  Object? _moveFocus(int direction) {
+    int fi;
+    Object? result;
+    if (_focusedIndex == -1 && direction > 0) {
+      fi = 0;
+      _listFocusNode.requestFocus();
+      result = true;
+    } else if (_focusedIndex == 0 && direction < 0) {
+      fi = -1;
+      _searchFocusNode.requestFocus();
+      result = true;
+    } else {
+      fi = (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
+      _listFocusNode.requestFocus();
+      result = true;
+    }
+    if (result == true) {
+      setState(() {
+        _focusedIndex = fi;
+      });
+    }
+    return result;
   }
 
   void _openRoutinePage(Routine routine) {
@@ -112,45 +121,55 @@ class MainPageState extends State<MainPage> {
   }
 
   // New methods for handling intents
-  void _handleMoveUp(MoveUpIntent intent) {
+  Object? _handleMoveUp(MoveUpIntent intent) {
     if (_focusedIndex >= 0) {
-      _moveFocus(-1);
+      return _moveFocus(-1);
     }
+    return null;
   }
 
-  void _handleMoveDown(MoveDownIntent intent) {
+  Object? _handleMoveDown(MoveDownIntent intent) {
     if (_focusedIndex < _filteredRoutines.length - 1) {
-      _moveFocus(1);
+      return _moveFocus(1);
     }
+    return null;
   }
 
-  void _handleGoForward(GoForwardIntent intent) {
+  Object? _handleGoForward(GoForwardIntent intent) {
     if (_searchFocusNode.hasFocus) {
-      _moveFocus(1);
-    } else {
+      return _moveFocus(1);
+    } else if (_listFocusNode.hasFocus) {
       _openRoutinePage(_filteredRoutines[_focusedIndex]);
+      return true;
     }
+    return null;
   }
 
-  void _handleGoBack(GoBackIntent intent) {
+  Object? _handleGoBack(GoBackIntent intent) {
     if (_listFocusNode.hasFocus) {
       _searchFocusNode.requestFocus();
+      return true;
     } else if (_searchFocusNode.hasFocus) {
       if (_searchController.text.isNotEmpty) {
         _searchController.clear();
         _filterRoutines('');
+        return true;
       } else {
         _goBack();
+        return true;
       }
     }
+    return null;
   }
 
-  void _handleMoveLeft(MoveLeftIntent intent) {
+  Object? _handleMoveLeft(MoveLeftIntent intent) {
     // Implement left movement logic if needed
+    return null;
   }
 
-  void _handleMoveRight(MoveRightIntent intent) {
+  Object? _handleMoveRight(MoveRightIntent intent) {
     // Implement right movement logic if needed
+    return null;
   }
 
   void _filterRoutines(String value) {
@@ -166,40 +185,36 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return FocusScope(
       autofocus: true,
-      child: Shortcuts(
-        shortcuts: <ShortcutActivator, Intent>{
-          LogicalKeySet(LogicalKeyboardKey.arrowUp): const MoveUpIntent(),
-          LogicalKeySet(LogicalKeyboardKey.keyI): const MoveUpIntent(),
-          LogicalKeySet(LogicalKeyboardKey.arrowDown): const MoveDownIntent(),
-          LogicalKeySet(LogicalKeyboardKey.keyK): const MoveDownIntent(),
-          LogicalKeySet(LogicalKeyboardKey.arrowLeft): const MoveLeftIntent(),
-          LogicalKeySet(LogicalKeyboardKey.keyJ): const MoveLeftIntent(),
-          LogicalKeySet(LogicalKeyboardKey.arrowRight): const MoveRightIntent(),
-          LogicalKeySet(LogicalKeyboardKey.keyL): const MoveRightIntent(),
-          LogicalKeySet(LogicalKeyboardKey.enter): const GoForwardIntent(),
-          LogicalKeySet(LogicalKeyboardKey.escape): const GoBackIntent(),
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
+          MoveDownIntent:
+              CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
+          MoveLeftIntent:
+              CallbackAction<MoveLeftIntent>(onInvoke: _handleMoveLeft),
+          MoveRightIntent:
+              CallbackAction<MoveRightIntent>(onInvoke: _handleMoveRight),
+          GoForwardIntent:
+              CallbackAction<GoForwardIntent>(onInvoke: _handleGoForward),
+          GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
         },
-        child: Actions(
-          actions: <Type, Action<Intent>>{
-            MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
-            MoveDownIntent:
-                CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
-            MoveLeftIntent:
-                CallbackAction<MoveLeftIntent>(onInvoke: _handleMoveLeft),
-            MoveRightIntent:
-                CallbackAction<MoveRightIntent>(onInvoke: _handleMoveRight),
-            GoForwardIntent:
-                CallbackAction<GoForwardIntent>(onInvoke: _handleGoForward),
-            GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Routines'),
-            ),
-            body: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Routines'),
+          ),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Shortcuts(
+                  shortcuts: <ShortcutActivator, Intent>{
+                    LogicalKeySet(LogicalKeyboardKey.arrowDown):
+                        const MoveDownIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.enter):
+                        const GoForwardIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.escape):
+                        const GoBackIntent(),
+                  },
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
@@ -212,7 +227,31 @@ class MainPageState extends State<MainPage> {
                     onChanged: _filterRoutines,
                   ),
                 ),
-                Expanded(
+              ),
+              Expanded(
+                child: Shortcuts(
+                  shortcuts: <ShortcutActivator, Intent>{
+                    LogicalKeySet(LogicalKeyboardKey.arrowUp):
+                        const MoveUpIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.keyI):
+                        const MoveUpIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.arrowDown):
+                        const MoveDownIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.keyK):
+                        const MoveDownIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.arrowLeft):
+                        const MoveLeftIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.keyJ):
+                        const MoveLeftIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.arrowRight):
+                        const MoveRightIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.keyL):
+                        const MoveRightIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.enter):
+                        const GoForwardIntent(),
+                    LogicalKeySet(LogicalKeyboardKey.escape):
+                        const GoBackIntent(),
+                  },
                   child: Focus(
                     focusNode: _listFocusNode,
                     child: ListView.builder(
@@ -232,8 +271,8 @@ class MainPageState extends State<MainPage> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
