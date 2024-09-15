@@ -6,6 +6,12 @@ import 'routine_page.dart';
 ////////////////////
 /// INPUT ISSUES ///
 ////////////////////
+// TODO: Make my own ListView that handles navigation, has a FocusScope + Node
+//       and handles the keyboard events for the list. I capture tab key to
+//       make it align with arrow key right or down, and shift+tab of course.
+//       The Flutter system only knows that the FocusScope of the list has focus
+//       but what goes on inside the list is not known.
+// TODO: Make my own SearchBar that is connected to my custom ListView.
 // TODO: Handle user clicking the text field
 // TODO: Handle mouse and keyboard interaction the way superhuman does
 // TODO: Align arrow keys with the tab index
@@ -158,7 +164,6 @@ class MainPageState extends State<MainPage> {
       if (_focusedIndex < _filteredRoutines.length - 1) {
         setState(() {
           _focusedIndex++;
-//          node.nextFocus();
         });
       }
       return KeyEventResult.handled;

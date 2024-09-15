@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class User {
   final String userId;
   final String firstName;
@@ -19,11 +21,13 @@ class RoutineAction {
 }
 
 class Routine {
+  final String id;
   final String name;
   final List<RoutineAction> actions;
   final List<RoutineInstance> instances;
 
   Routine({
+    required this.id,
     required this.name,
     required this.actions,
     List<RoutineInstance>? instances,
@@ -87,6 +91,7 @@ class DummyDataGenerator {
     final users = generateUsers();
     final routines = [
       Routine(
+        id: Random().nextInt(9999999999).toString(),
         name: 'Employee Onboarding',
         actions: [
           RoutineAction(name: 'Create user in Active Directory'),
@@ -100,6 +105,7 @@ class DummyDataGenerator {
         ],
       ),
       Routine(
+        id: Random().nextInt(9999999999).toString(),
         name: 'Employee Offboarding',
         actions: [
           RoutineAction(name: 'Remove user from Active Directory'),
@@ -117,6 +123,7 @@ class DummyDataGenerator {
         ],
       ),
       Routine(
+        id: Random().nextInt(9999999999).toString(),
         name: 'MNDA',
         actions: [
           RoutineAction(name: 'Open bolago.se'),
