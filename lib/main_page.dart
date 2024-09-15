@@ -51,7 +51,12 @@ class MainPageState extends State<MainPage> {
       MaterialPageRoute(
         builder: (context) => RoutinePage(routine: routine),
       ),
-    ).then((_) => _listFocusNode.requestFocus());
+    ).then((_) {
+      setState(() {
+        _focusedIndex = _filteredRoutines.indexOf(routine);
+      });
+      _listFocusNode.requestFocus();
+    });
   }
 
   void _filterRoutines(String value) {
