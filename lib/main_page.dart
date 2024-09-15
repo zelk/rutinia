@@ -31,8 +31,6 @@ class MainPageState extends State<MainPage> {
     super.initState();
     _allRoutines = DummyDataGenerator.generateRoutines();
     _filteredRoutines = _allRoutines;
-//    _searchFocusNode.addListener(_onFocusChange);
-//    _listFocusNode.addListener(_onFocusChange);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
@@ -42,8 +40,6 @@ class MainPageState extends State<MainPage> {
   @override
   void dispose() {
     _searchController.dispose();
-//    _searchFocusNode.removeListener(_onFocusChange);
-//    _listFocusNode.removeListener(_onFocusChange);
     _searchFocusNode.dispose();
     _listFocusNode.dispose();
     super.dispose();
