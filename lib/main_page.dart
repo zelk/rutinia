@@ -3,36 +3,13 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
+// TODO: Handle user clicking the text field
+// TODO: Handle mouse and keyboard interaction the way superhuman does
+// TODO: Implement my own functionality for the tab, shift tab and space keys
 // TODO: Break out keybaord shortcuts into a separate file or even a separate widget
-// TODO: The i, j, k and l keys must not overtake the text input in the search text field
 // TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
-// TODO: Make sure that the Tab key and the up/down arrow keys are using the same focus features as right now, the tab based focus can be in one place while the arrow keys focus can be in a different place
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
-
-class MoveUpIntent extends Intent {
-  const MoveUpIntent();
-}
-
-class MoveDownIntent extends Intent {
-  const MoveDownIntent();
-}
-
-class GoBackIntent extends Intent {
-  const GoBackIntent();
-}
-
-class GoForwardIntent extends Intent {
-  const GoForwardIntent();
-}
-
-class MoveLeftIntent extends Intent {
-  const MoveLeftIntent();
-}
-
-class MoveRightIntent extends Intent {
-  const MoveRightIntent();
-}
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -54,8 +31,8 @@ class MainPageState extends State<MainPage> {
     super.initState();
     _allRoutines = DummyDataGenerator.generateRoutines();
     _filteredRoutines = _allRoutines;
-    _searchFocusNode.addListener(_onFocusChange);
-    _listFocusNode.addListener(_onFocusChange);
+//    _searchFocusNode.addListener(_onFocusChange);
+//    _listFocusNode.addListener(_onFocusChange);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
@@ -65,43 +42,11 @@ class MainPageState extends State<MainPage> {
   @override
   void dispose() {
     _searchController.dispose();
-    _searchFocusNode.removeListener(_onFocusChange);
-    _listFocusNode.removeListener(_onFocusChange);
+//    _searchFocusNode.removeListener(_onFocusChange);
+//    _listFocusNode.removeListener(_onFocusChange);
     _searchFocusNode.dispose();
     _listFocusNode.dispose();
     super.dispose();
-  }
-
-  void _onFocusChange() {
-    setState(() {
-      if (_searchFocusNode.hasFocus) {
-        _focusedIndex = -1;
-      } else if (_listFocusNode.hasFocus && _focusedIndex == -1) {
-        _focusedIndex = 0;
-      }
-    });
-  }
-
-  // TODO: Get rid of this method and do everything in e.g. _handleMoveDown
-  Object? _moveFocus(int direction) {
-    if (_focusedIndex == -1 && direction > 0 && _filteredRoutines.isNotEmpty) {
-      setState(() {
-        _focusedIndex = 0;
-      });
-      _listFocusNode.requestFocus();
-    } else if (_focusedIndex == 0 && direction < 0) {
-      setState(() {
-        _focusedIndex = -1;
-      });
-      _searchFocusNode.requestFocus();
-    } else if (_filteredRoutines.isNotEmpty) {
-      setState(() {
-        _focusedIndex =
-            (_focusedIndex + direction).clamp(0, _filteredRoutines.length - 1);
-      });
-      _listFocusNode.requestFocus();
-    }
-    return null;
   }
 
   void _openRoutinePage(Routine routine) {
@@ -113,165 +58,151 @@ class MainPageState extends State<MainPage> {
     ).then((_) => _listFocusNode.requestFocus());
   }
 
-  void _goBack() {
-    Navigator.of(context).maybePop();
-  }
-
-  // New methods for handling intents
-  Object? _handleMoveUp(MoveUpIntent intent) {
-    if (_focusedIndex >= 0) {
-      return _moveFocus(-1);
-    }
-    return null;
-  }
-
-  Object? _handleMoveDown(MoveDownIntent intent) {
-    if (_focusedIndex < _filteredRoutines.length - 1) {
-      return _moveFocus(1);
-    }
-    return null;
-  }
-
-  Object? _handleGoForward(GoForwardIntent intent) {
-    if (_searchFocusNode.hasFocus) {
-      return _moveFocus(1);
-    } else if (_listFocusNode.hasFocus && _focusedIndex != -1) {
-      _openRoutinePage(_filteredRoutines[_focusedIndex]);
-      return true;
-    }
-    print("GoForwardIntent: No focus node has focus");
-    return null;
-  }
-
-  Object? _handleGoBack(GoBackIntent intent) {
-    if (_listFocusNode.hasFocus) {
-      _searchFocusNode.requestFocus();
-      return true;
-    } else if (_searchFocusNode.hasFocus) {
-      if (_searchController.text.isNotEmpty) {
-        _searchController.clear();
-        _filterRoutines('');
-        return true;
-      } else {
-        _goBack();
-        return true;
-      }
-    }
-    return null;
-  }
-
-  Object? _handleMoveLeft(MoveLeftIntent intent) {
-    // Implement left movement logic if needed
-    return null;
-  }
-
-  Object? _handleMoveRight(MoveRightIntent intent) {
-    // Implement right movement logic if needed
-    return null;
-  }
-
   void _filterRoutines(String value) {
     setState(() {
       _filteredRoutines = _allRoutines
           .where((routine) =>
               routine.name.toLowerCase().contains(value.toLowerCase()))
           .toList();
+      if (_filteredRoutines.isEmpty) {
+        _focusedIndex = -1;
+      } else if (_focusedIndex >= _filteredRoutines.length) {
+        _focusedIndex = _filteredRoutines.length - 1;
+      }
     });
+  }
+
+  KeyEventResult _handleSearchFocusKeyPress(KeyEvent event) {
+    if ((event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
+        event is KeyDownEvent) {
+      if (_filteredRoutines.isNotEmpty) {
+        _listFocusNode.requestFocus();
+        setState(() {
+          _focusedIndex = 0;
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.escape &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_searchController.text.isNotEmpty) {
+        _searchController.clear();
+        _filterRoutines('');
+      } else {
+        Navigator.of(context).maybePop();
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_searchController.selection.baseOffset ==
+          _searchController.text.length) {
+        _listFocusNode.requestFocus();
+        setState(() {
+          _focusedIndex = 0;
+        });
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
+  KeyEventResult _handleListFocusKeyPress(KeyEvent event) {
+    if ((event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
+        event is KeyDownEvent) {
+      assert(_filteredRoutines.isNotEmpty);
+      assert(_focusedIndex != -1);
+      _openRoutinePage(_filteredRoutines[_focusedIndex]);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.escape &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      _searchFocusNode.requestFocus();
+      setState(() {
+        _focusedIndex = -1;
+      });
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_focusedIndex > 0) {
+        setState(() {
+          _focusedIndex--;
+        });
+      } else {
+        _searchFocusNode.requestFocus();
+        setState(() {
+          _focusedIndex = -1;
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_focusedIndex < _filteredRoutines.length - 1) {
+        setState(() {
+          _focusedIndex++;
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
   Widget build(BuildContext context) {
     return FocusScope(
       autofocus: true,
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          MoveUpIntent: CallbackAction<MoveUpIntent>(onInvoke: _handleMoveUp),
-          MoveDownIntent:
-              CallbackAction<MoveDownIntent>(onInvoke: _handleMoveDown),
-          MoveLeftIntent:
-              CallbackAction<MoveLeftIntent>(onInvoke: _handleMoveLeft),
-          MoveRightIntent:
-              CallbackAction<MoveRightIntent>(onInvoke: _handleMoveRight),
-          GoForwardIntent:
-              CallbackAction<GoForwardIntent>(onInvoke: _handleGoForward),
-          GoBackIntent: CallbackAction<GoBackIntent>(onInvoke: _handleGoBack),
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Routines'),
-          ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Shortcuts(
-                  shortcuts: <ShortcutActivator, Intent>{
-                    LogicalKeySet(LogicalKeyboardKey.arrowDown):
-                        const MoveDownIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.enter):
-                        const GoForwardIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.escape):
-                        const GoBackIntent(),
+      onKeyEvent: (node, event) {
+        if (_searchFocusNode.hasFocus) {
+          return _handleSearchFocusKeyPress(event);
+        } else if (_listFocusNode.hasFocus) {
+          return _handleListFocusKeyPress(event);
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Routines'),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search routines',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: _filterRoutines,
+              ),
+            ),
+            Expanded(
+              child: Focus(
+                focusNode: _listFocusNode,
+                child: ListView.builder(
+                  itemCount: _filteredRoutines.length,
+                  itemBuilder: (context, index) {
+                    final routine = _filteredRoutines[index];
+                    final isFocused = _focusedIndex == index;
+                    return ListTile(
+                      title: Text(routine.name),
+                      subtitle: Text('${routine.instances.length} instances'),
+                      tileColor:
+                          isFocused ? Colors.blue.withOpacity(0.1) : null,
+                      onTap: () => _openRoutinePage(routine),
+                    );
                   },
-                  child: TextField(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                    decoration: InputDecoration(
-                      hintText: 'Search routines',
-                      hintStyle: TextStyle(color: Colors.grey[400]),
-                      prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
-                    ),
-                    onChanged: _filterRoutines,
-                  ),
                 ),
               ),
-              Expanded(
-                child: Shortcuts(
-                  shortcuts: <ShortcutActivator, Intent>{
-                    LogicalKeySet(LogicalKeyboardKey.arrowUp):
-                        const MoveUpIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.keyI):
-                        const MoveUpIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.arrowDown):
-                        const MoveDownIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.keyK):
-                        const MoveDownIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.arrowLeft):
-                        const MoveLeftIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.keyJ):
-                        const MoveLeftIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.arrowRight):
-                        const MoveRightIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.keyL):
-                        const MoveRightIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.enter):
-                        const GoForwardIntent(),
-                    LogicalKeySet(LogicalKeyboardKey.escape):
-                        const GoBackIntent(),
-                  },
-                  child: Focus(
-                    focusNode: _listFocusNode,
-                    child: ListView.builder(
-                      itemCount: _filteredRoutines.length,
-                      itemBuilder: (context, index) {
-                        final routine = _filteredRoutines[index];
-                        final isFocused = _focusedIndex == index;
-                        return ListTile(
-                          title: Text(routine.name),
-                          subtitle:
-                              Text('${routine.instances.length} instances'),
-                          tileColor:
-                              isFocused ? Colors.blue.withOpacity(0.1) : null,
-                          onTap: () => _openRoutinePage(routine),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
