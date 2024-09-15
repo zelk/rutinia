@@ -3,11 +3,18 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
+////////////////////
+/// INPUT ISSUES ///
+////////////////////
 // TODO: Handle user clicking the text field
 // TODO: Handle mouse and keyboard interaction the way superhuman does
-// TODO: Implement my own functionality for the tab, shift tab and space keys
+// TODO: Align arrow keys with the tab index
 // TODO: Break out keybaord shortcuts into a separate file or even a separate widget
 // TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
+
+/////////////////////////
+/// NAVIGATION ISSUES ///
+/////////////////////////
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
 
@@ -31,6 +38,8 @@ class MainPageState extends State<MainPage> {
     super.initState();
     _allRoutines = DummyDataGenerator.generateRoutines();
     _filteredRoutines = _allRoutines;
+    _searchController
+        .addListener(() => _filterRoutines(_searchController.text));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
@@ -179,6 +188,16 @@ class MainPageState extends State<MainPage> {
                   hintText: 'Search routines',
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: 'Esc',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                        )
+                      : null,
                   border: const OutlineInputBorder(),
                 ),
                 onChanged: _filterRoutines,
@@ -196,7 +215,7 @@ class MainPageState extends State<MainPage> {
                       title: Text(routine.name),
                       subtitle: Text('${routine.instances.length} instances'),
                       tileColor:
-                          isFocused ? Colors.blue.withOpacity(0.1) : null,
+                          isFocused ? Theme.of(context).focusColor : null,
                       onTap: () => _openRoutinePage(routine),
                     );
                   },
