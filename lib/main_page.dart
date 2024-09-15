@@ -9,8 +9,9 @@ import 'routine_page.dart';
 // TODO: Handle user clicking the text field
 // TODO: Handle mouse and keyboard interaction the way superhuman does
 // TODO: Align arrow keys with the tab index
-// TODO: Break out keybaord shortcuts into a separate file or even a separate widget
-// TODO: If a user presses the down arrow key at the bottom of the list, the key stroke should be ignored.
+// TODO: If a user presses the down arrow key at the bottom of the list, the key
+//       stroke should be ignored. The reason that no OS sound is played is
+//       likely because of the tab index system.
 
 /////////////////////////
 /// NAVIGATION ISSUES ///
@@ -32,6 +33,7 @@ class MainPageState extends State<MainPage> {
   late List<Routine> _filteredRoutines;
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _listFocusNode = FocusNode();
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class MainPageState extends State<MainPage> {
 
   @override
   void dispose() {
+    _focusScopeNode.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _listFocusNode.dispose();
@@ -82,7 +85,8 @@ class MainPageState extends State<MainPage> {
     });
   }
 
-  KeyEventResult _handleSearchFocusKeyPress(KeyEvent event) {
+  KeyEventResult _handleSearchFocusKeyPress(
+      FocusScopeNode node, KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
@@ -118,7 +122,7 @@ class MainPageState extends State<MainPage> {
     return KeyEventResult.ignored;
   }
 
-  KeyEventResult _handleListFocusKeyPress(KeyEvent event) {
+  KeyEventResult _handleListFocusKeyPress(FocusScopeNode node, KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
@@ -154,6 +158,7 @@ class MainPageState extends State<MainPage> {
       if (_focusedIndex < _filteredRoutines.length - 1) {
         setState(() {
           _focusedIndex++;
+//          node.nextFocus();
         });
       }
       return KeyEventResult.handled;
@@ -165,11 +170,12 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return FocusScope(
       autofocus: true,
+      node: _focusScopeNode,
       onKeyEvent: (node, event) {
         if (_searchFocusNode.hasFocus) {
-          return _handleSearchFocusKeyPress(event);
+          return _handleSearchFocusKeyPress(_focusScopeNode, event);
         } else if (_listFocusNode.hasFocus) {
-          return _handleListFocusKeyPress(event);
+          return _handleListFocusKeyPress(_focusScopeNode, event);
         }
         return KeyEventResult.ignored;
       },
@@ -206,20 +212,26 @@ class MainPageState extends State<MainPage> {
             Expanded(
               child: Focus(
                 focusNode: _listFocusNode,
-                child: ListView.builder(
-                  itemCount: _filteredRoutines.length,
-                  itemBuilder: (context, index) {
-                    final routine = _filteredRoutines[index];
-                    final isFocused = _focusedIndex == index;
-                    return ListTile(
-                      title: Text(routine.name),
-                      subtitle: Text('${routine.instances.length} instances'),
-                      tileColor:
-                          isFocused ? Theme.of(context).focusColor : null,
-                      onTap: () => _openRoutinePage(routine),
-                    );
-                  },
-                ),
+                child: _filteredRoutines.isEmpty
+                    ? const Center(
+                        child: Text('No matches found.'),
+                      )
+                    : ListView.builder(
+                        itemCount: _filteredRoutines.length,
+                        itemBuilder: (context, index) {
+                          final routine = _filteredRoutines[index];
+                          final isFocused = _focusedIndex == index;
+                          return ListTile(
+                            title: Text(routine.name),
+                            subtitle:
+                                Text('${routine.instances.length} instances'),
+                            tileColor:
+//                                isFocused ? Theme.of(context).focusColor : null,
+                                isFocused ? Colors.blue.withOpacity(0.1) : null,
+                            onTap: () => _openRoutinePage(routine),
+                          );
+                        },
+                      ),
               ),
             ),
           ],
