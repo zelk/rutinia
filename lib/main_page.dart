@@ -6,11 +6,37 @@ import 'routine_page.dart';
 ////////////////////
 /// INPUT ISSUES ///
 ////////////////////
+// TODO: Still, actually, maybe it makes sense to have focus scopes for each
+//       row and focus nodes for each row column item in each row. And an outer
+//       focus scope for the list.
 // TODO: Make my own ListView that handles navigation, has a FocusScope + Node
 //       and handles the keyboard events for the list. I capture tab key to
 //       make it align with arrow key right or down, and shift+tab of course.
 //       The Flutter system only knows that the FocusScope of the list has focus
 //       but what goes on inside the list is not known.
+
+//        FocusManager.instance.primaryFocus?.nearestScope
+//        FocusManager.instance.primaryFocus?.enclosingScope
+// I MAY NEED DirectionalFocusTraversalPolicyMixin but it may also be overkill,
+//   since it's mainly for when items are not greatly aligned... but I was
+//   actually thinking the other day about when some rows are missing some
+//   of the focusable items...
+// Here's another thing:
+//   https://medium.com/@omlondhe/keyboard-focus-in-flutter-9fd28af0672
+// THIS IS INTERESTING. There's up, down, left, right!!!
+//        _focusScopeNode.focusInDirection(TraversalDirection.right);
+//        _focusScopeNode.focusedChild
+//            ?.focusInDirection(TraversalDirection.right);
+// THIS SHOUD STOP NAVIGATION AT THE EDGE WITHOUT CUSTOM CODE
+// SO, THE IMPLEMENTATION WOULD BE AS FOLLOWS:
+// I make my own ListView that has a FocusScope. Below it, everything focusable
+// should have a Focus (and possibly a focus node if needed, hopefully not).
+// I can use focusInDirection of the FocusScope to move up, down, left, right
+//
+// IT SEEMS AS IF ChatGPT 1o mini often adds controllers (and possibly
+// focus nodes) to the model classes. It may be something to consider, unless
+// it takes up too much resources if I load a lot of data.
+
 // TODO: Make my own SearchBar that is connected to my custom ListView.
 // TODO: Handle user clicking the text field
 // TODO: Handle mouse and keyboard interaction the way superhuman does
@@ -219,7 +245,7 @@ class MainPageState extends State<MainPage> {
                 focusNode: _listFocusNode,
                 child: _filteredRoutines.isEmpty
                     ? const Center(
-                        child: Text('No matches found.'),
+                        child: Text('No matches'),
                       )
                     : ListView.builder(
                         itemCount: _filteredRoutines.length,
