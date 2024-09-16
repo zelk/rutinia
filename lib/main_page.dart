@@ -64,8 +64,7 @@ class MainPageState extends State<MainPage> {
   late List<Routine> _allRoutines;
   late List<Routine> _filteredRoutines;
   final FocusNode _searchFocusNode = FocusNode();
-  final FocusNode _listFocusNode = FocusNode();
-  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+  final FocusScopeNode _listFocusScopeNode = FocusScopeNode();
 
   @override
   void initState() {
@@ -82,10 +81,9 @@ class MainPageState extends State<MainPage> {
 
   @override
   void dispose() {
-    _focusScopeNode.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
-    _listFocusNode.dispose();
+    _listFocusScopeNode.dispose();
     super.dispose();
   }
 
@@ -99,7 +97,7 @@ class MainPageState extends State<MainPage> {
       setState(() {
         _focusedIndex = _filteredRoutines.indexOf(routine);
       });
-      _listFocusNode.requestFocus();
+      _listFocusScopeNode.requestFocus();
     });
   }
 
@@ -117,13 +115,12 @@ class MainPageState extends State<MainPage> {
     });
   }
 
-  KeyEventResult _handleSearchFocusKeyPress(
-      FocusScopeNode node, KeyEvent event) {
+  KeyEventResult _handleSearchFocusKeyPress(KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
       if (_filteredRoutines.isNotEmpty) {
-        _listFocusNode.requestFocus();
+        _listFocusScopeNode.requestFocus();
         setState(() {
           _focusedIndex = 0;
         });
@@ -144,7 +141,7 @@ class MainPageState extends State<MainPage> {
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_searchController.selection.baseOffset ==
           _searchController.text.length) {
-        _listFocusNode.requestFocus();
+        _listFocusScopeNode.requestFocus();
         setState(() {
           _focusedIndex = 0;
         });
@@ -154,7 +151,7 @@ class MainPageState extends State<MainPage> {
     return KeyEventResult.ignored;
   }
 
-  KeyEventResult _handleListFocusKeyPress(FocusScopeNode node, KeyEvent event) {
+  KeyEventResult _handleListFocusKeyPress(KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
@@ -199,26 +196,20 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusScope(
-      autofocus: true,
-      node: _focusScopeNode,
-      onKeyEvent: (node, event) {
-        if (_searchFocusNode.hasFocus) {
-          return _handleSearchFocusKeyPress(_focusScopeNode, event);
-        } else if (_listFocusNode.hasFocus) {
-          return _handleListFocusKeyPress(_focusScopeNode, event);
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Routines'),
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Routines'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FocusScope(
+              onKeyEvent: (node, event) {
+                return _handleSearchFocusKeyPress(event);
+              },
               child: TextField(
+                autofocus: true,
                 controller: _searchController,
                 focusNode: _searchFocusNode,
                 decoration: InputDecoration(
@@ -240,33 +231,36 @@ class MainPageState extends State<MainPage> {
                 onChanged: _filterRoutines,
               ),
             ),
-            Expanded(
-              child: Focus(
-                focusNode: _listFocusNode,
-                child: _filteredRoutines.isEmpty
-                    ? const Center(
-                        child: Text('No matches'),
-                      )
-                    : ListView.builder(
-                        itemCount: _filteredRoutines.length,
-                        itemBuilder: (context, index) {
-                          final routine = _filteredRoutines[index];
-                          final isFocused = _focusedIndex == index;
-                          return ListTile(
-                            title: Text(routine.name),
-                            subtitle:
-                                Text('${routine.instances.length} instances'),
-                            tileColor:
+          ),
+          Expanded(
+            child: FocusScope(
+              node: _listFocusScopeNode,
+              onKeyEvent: (node, event) {
+                return _handleListFocusKeyPress(event);
+              },
+              child: _filteredRoutines.isEmpty
+                  ? const Center(
+                      child: Text('No matches'),
+                    )
+                  : ListView.builder(
+                      itemCount: _filteredRoutines.length,
+                      itemBuilder: (context, index) {
+                        final routine = _filteredRoutines[index];
+                        final isFocused = _focusedIndex == index;
+                        return ListTile(
+                          title: Text(routine.name),
+                          subtitle:
+                              Text('${routine.instances.length} instances'),
+                          tileColor:
 //                                isFocused ? Theme.of(context).focusColor : null,
-                                isFocused ? Colors.blue.withOpacity(0.1) : null,
-                            onTap: () => _openRoutinePage(routine),
-                          );
-                        },
-                      ),
-              ),
+                              isFocused ? Colors.blue.withOpacity(0.1) : null,
+                          onTap: () => _openRoutinePage(routine),
+                        );
+                      },
+                    ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
