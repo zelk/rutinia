@@ -6,12 +6,12 @@ import 'routine_page.dart';
 // TODO: Handle mouse and keyboard interaction the way superhuman does
 // TODO: Click an item should use focus correctly
 // TODO: Make my own ListView that handles navigation and search bar
-//        FocusManager.instance.primaryFocus?.nearestScope
-//        FocusManager.instance.primaryFocus?.enclosingScope
+// TODO: Check ideas below when needed:
 // DirectionalFocusTraversalPolicyMixin may be good with many columns where
 //   some rows are missing some
 // https://medium.com/@omlondhe/keyboard-focus-in-flutter-9fd28af0672
-//
+// FocusManager.instance.primaryFocus?.nearestScope
+// FocusManager.instance.primaryFocus?.enclosingScope
 // It seems as if ChatGPT 1o mini often adds controllers (and possibly
 // focus nodes) to the model classes. It may be something to consider, unless
 // it takes up too much resources if I load a lot of data.
