@@ -3,51 +3,18 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-////////////////////
-/// INPUT ISSUES ///
-////////////////////
-// TODO: Still, actually, maybe it makes sense to have focus scopes for each
-//       row and focus nodes for each row column item in each row. And an outer
-//       focus scope for the list.
-// TODO: Make my own ListView that handles navigation, has a FocusScope + Node
-//       and handles the keyboard events for the list. I capture tab key to
-//       make it align with arrow key right or down, and shift+tab of course.
-//       The Flutter system only knows that the FocusScope of the list has focus
-//       but what goes on inside the list is not known.
-
+// TODO: Bug: Go down to list item 2, then click search, then down arrow twice
+// TODO: Handle mouse and keyboard interaction the way superhuman does
+// TODO: Make my own ListView that handles navigation and search bar
 //        FocusManager.instance.primaryFocus?.nearestScope
 //        FocusManager.instance.primaryFocus?.enclosingScope
-// I MAY NEED DirectionalFocusTraversalPolicyMixin but it may also be overkill,
-//   since it's mainly for when items are not greatly aligned... but I was
-//   actually thinking the other day about when some rows are missing some
-//   of the focusable items...
-// Here's another thing:
-//   https://medium.com/@omlondhe/keyboard-focus-in-flutter-9fd28af0672
-// THIS IS INTERESTING. There's up, down, left, right!!!
-//        _focusScopeNode.focusInDirection(TraversalDirection.right);
-//        _focusScopeNode.focusedChild
-//            ?.focusInDirection(TraversalDirection.right);
-// THIS SHOUD STOP NAVIGATION AT THE EDGE WITHOUT CUSTOM CODE
-// SO, THE IMPLEMENTATION WOULD BE AS FOLLOWS:
-// I make my own ListView that has a FocusScope. Below it, everything focusable
-// should have a Focus (and possibly a focus node if needed, hopefully not).
-// I can use focusInDirection of the FocusScope to move up, down, left, right
+// DirectionalFocusTraversalPolicyMixin may be good with many columns where
+//   some rows are missing some
+// https://medium.com/@omlondhe/keyboard-focus-in-flutter-9fd28af0672
 //
-// IT SEEMS AS IF ChatGPT 1o mini often adds controllers (and possibly
+// It seems as if ChatGPT 1o mini often adds controllers (and possibly
 // focus nodes) to the model classes. It may be something to consider, unless
 // it takes up too much resources if I load a lot of data.
-
-// TODO: Make my own SearchBar that is connected to my custom ListView.
-// TODO: Handle user clicking the text field
-// TODO: Handle mouse and keyboard interaction the way superhuman does
-// TODO: Align arrow keys with the tab index
-// TODO: If a user presses the down arrow key at the bottom of the list, the key
-//       stroke should be ignored. The reason that no OS sound is played is
-//       likely because of the tab index system.
-
-/////////////////////////
-/// NAVIGATION ISSUES ///
-/////////////////////////
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
 
@@ -120,10 +87,7 @@ class MainPageState extends State<MainPage> {
         builder: (context) => RoutinePage(routine: routine),
       ),
     ).then((_) {
-      setState(() {
-// TODO: Implement in case it's not automatic now with my new navigation method.
-//        _focusedIndex = _filteredRoutines.indexOf(routine);
-      });
+// TODO: Verify how this works with mouse navigation
       _listFocusScopeNode.requestFocus();
     });
   }
@@ -134,12 +98,6 @@ class MainPageState extends State<MainPage> {
           .where((routine) =>
               routine.name.toLowerCase().contains(value.toLowerCase()))
           .toList();
-// TODO: Verify that this is not neded
-//      if (_filteredRoutines.isEmpty) {
-//        _focusedIndex = -1;
-//      } else if (_focusedIndex >= _filteredRoutines.length) {
-//        _focusedIndex = _filteredRoutines.length - 1;
-//      }
     });
   }
 
