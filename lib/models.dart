@@ -91,7 +91,7 @@ class DummyDataGenerator {
     final users = generateUsers();
     final routines = [
       Routine(
-        id: Random().nextInt(9999999999).toString(),
+        id: Random().nextInt(999999999).toString(),
         name: 'Employee Onboarding',
         actions: [
           RoutineAction(name: 'Create user in Active Directory'),
@@ -105,7 +105,7 @@ class DummyDataGenerator {
         ],
       ),
       Routine(
-        id: Random().nextInt(9999999999).toString(),
+        id: Random().nextInt(999999999).toString(),
         name: 'Employee Offboarding',
         actions: [
           RoutineAction(name: 'Remove user from Active Directory'),
@@ -123,7 +123,7 @@ class DummyDataGenerator {
         ],
       ),
       Routine(
-        id: Random().nextInt(9999999999).toString(),
+        id: Random().nextInt(999999999).toString(),
         name: 'MNDA',
         actions: [
           RoutineAction(name: 'Open bolago.se'),

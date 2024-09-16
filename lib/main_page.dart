@@ -60,11 +60,13 @@ class MainPage extends StatefulWidget {
 
 class MainPageState extends State<MainPage> {
   final TextEditingController _searchController = TextEditingController();
-  int _focusedIndex = -1;
+  int _listRowIndex = -1;
   late List<Routine> _allRoutines;
   late List<Routine> _filteredRoutines;
+  late List<List<FocusNode>> _listFocusNodes;
   final FocusNode _searchFocusNode = FocusNode();
   final FocusScopeNode _listFocusScopeNode = FocusScopeNode();
+  final int _numColumns = 3;
 
   @override
   void initState() {
@@ -73,7 +75,13 @@ class MainPageState extends State<MainPage> {
     _filteredRoutines = _allRoutines;
     _searchController
         .addListener(() => _filterRoutines(_searchController.text));
-
+    _listFocusNodes = List.generate(
+      _filteredRoutines.length,
+      (_) => List.generate(
+        _numColumns,
+        (_) => FocusNode(),
+      ),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
     });
@@ -81,10 +89,28 @@ class MainPageState extends State<MainPage> {
 
   @override
   void dispose() {
+    _listFocusScopeNode.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
-    _listFocusScopeNode.dispose();
+    for (var list in _listFocusNodes) {
+      for (var node in list) {
+        node.dispose();
+      }
+    }
     super.dispose();
+  }
+
+  FocusNode _getListFocusNode(int row, int col) {
+    assert(row >= 0 && col >= 0);
+    if (row > _listFocusNodes.length - 1) {
+      // TODO: I may need to generate more than one. Check diff!!!
+      _listFocusNodes.add(List.generate(
+        _numColumns,
+        (_) => FocusNode(),
+      ));
+    }
+    assert(col < _listFocusNodes[row].length); // No dynamic column addition
+    return _listFocusNodes[row][col];
   }
 
   void _openRoutinePage(Routine routine) {
@@ -95,7 +121,8 @@ class MainPageState extends State<MainPage> {
       ),
     ).then((_) {
       setState(() {
-        _focusedIndex = _filteredRoutines.indexOf(routine);
+// TODO: Implement in case it's not automatic now with my new navigation method.
+//        _focusedIndex = _filteredRoutines.indexOf(routine);
       });
       _listFocusScopeNode.requestFocus();
     });
@@ -107,23 +134,23 @@ class MainPageState extends State<MainPage> {
           .where((routine) =>
               routine.name.toLowerCase().contains(value.toLowerCase()))
           .toList();
-      if (_filteredRoutines.isEmpty) {
-        _focusedIndex = -1;
-      } else if (_focusedIndex >= _filteredRoutines.length) {
-        _focusedIndex = _filteredRoutines.length - 1;
-      }
+// TODO: Verify that this is not neded
+//      if (_filteredRoutines.isEmpty) {
+//        _focusedIndex = -1;
+//      } else if (_focusedIndex >= _filteredRoutines.length) {
+//        _focusedIndex = _filteredRoutines.length - 1;
+//      }
     });
   }
 
-  KeyEventResult _handleSearchFocusKeyPress(KeyEvent event) {
+  KeyEventResult _handleSearchFocusKeyPress(
+      BuildContext context, KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
       if (_filteredRoutines.isNotEmpty) {
         _listFocusScopeNode.requestFocus();
-        setState(() {
-          _focusedIndex = 0;
-        });
+        _getListFocusNode(0, 0).requestFocus();
       }
       return KeyEventResult.handled;
     }
@@ -141,52 +168,48 @@ class MainPageState extends State<MainPage> {
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_searchController.selection.baseOffset ==
           _searchController.text.length) {
-        _listFocusScopeNode.requestFocus();
-        setState(() {
-          _focusedIndex = 0;
-        });
+        _getListFocusNode(0, 0).requestFocus();
         return KeyEventResult.handled;
       }
     }
     return KeyEventResult.ignored;
   }
 
-  KeyEventResult _handleListFocusKeyPress(KeyEvent event) {
+  KeyEventResult _handleListFocusKeyPress(
+      BuildContext context, KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         event is KeyDownEvent) {
       assert(_filteredRoutines.isNotEmpty);
-      assert(_focusedIndex != -1);
-      _openRoutinePage(_filteredRoutines[_focusedIndex]);
+      assert(_listRowIndex != -1);
+      _openRoutinePage(_filteredRoutines[_listRowIndex]);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.escape &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       _searchFocusNode.requestFocus();
-      setState(() {
-        _focusedIndex = -1;
-      });
+      FocusScope.of(context).focusedChild?.unfocus();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
-      if (_focusedIndex > 0) {
-        setState(() {
-          _focusedIndex--;
-        });
+      if (_listRowIndex > 0) {
+        FocusScope.of(context)
+            .focusedChild
+            ?.focusInDirection(TraversalDirection.up);
       } else {
+        _getListFocusNode(_listRowIndex, 0).unfocus();
         _searchFocusNode.requestFocus();
-        setState(() {
-          _focusedIndex = -1;
-        });
       }
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
-      if (_focusedIndex < _filteredRoutines.length - 1) {
+      if (_listRowIndex < _filteredRoutines.length - 1) {
         setState(() {
-          _focusedIndex++;
+          FocusScope.of(context)
+              .focusedChild
+              ?.focusInDirection(TraversalDirection.down);
         });
       }
       return KeyEventResult.handled;
@@ -198,7 +221,7 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Routines'),
+        title: Text('Routines{$_listRowIndex}'),
       ),
       body: Column(
         children: [
@@ -206,7 +229,7 @@ class MainPageState extends State<MainPage> {
             padding: const EdgeInsets.all(8.0),
             child: FocusScope(
               onKeyEvent: (node, event) {
-                return _handleSearchFocusKeyPress(event);
+                return _handleSearchFocusKeyPress(context, event);
               },
               child: TextField(
                 autofocus: true,
@@ -236,7 +259,7 @@ class MainPageState extends State<MainPage> {
             child: FocusScope(
               node: _listFocusScopeNode,
               onKeyEvent: (node, event) {
-                return _handleListFocusKeyPress(event);
+                return _handleListFocusKeyPress(context, event);
               },
               child: _filteredRoutines.isEmpty
                   ? const Center(
@@ -246,15 +269,38 @@ class MainPageState extends State<MainPage> {
                       itemCount: _filteredRoutines.length,
                       itemBuilder: (context, index) {
                         final routine = _filteredRoutines[index];
-                        final isFocused = _focusedIndex == index;
-                        return ListTile(
-                          title: Text(routine.name),
-                          subtitle:
-                              Text('${routine.instances.length} instances'),
-                          tileColor:
-//                                isFocused ? Theme.of(context).focusColor : null,
-                              isFocused ? Colors.blue.withOpacity(0.1) : null,
-                          onTap: () => _openRoutinePage(routine),
+                        final focusNode = _getListFocusNode(index, 0);
+                        return Focus(
+                          focusNode: focusNode,
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus) {
+                              setState(() {
+                                _listRowIndex = index;
+                              });
+                            } else {
+                              if (_listRowIndex == index) {
+                                setState(() {
+                                  _listRowIndex = -1;
+                                });
+                              }
+                            }
+                          },
+                          child: ListTile(
+                            title: Text(routine.name),
+                            onFocusChange: (hasFocus) {
+                              if (hasFocus) {
+                                print('Focus on ListTile $index');
+                              } else {
+                                print('Unfocus on ListTile $index');
+                              }
+                            },
+                            subtitle:
+                                Text('${routine.instances.length} instances'),
+                            tileColor: focusNode.hasFocus
+                                ? Colors.blue.withOpacity(0.1)
+                                : null,
+                            onTap: () => _openRoutinePage(routine),
+                          ),
                         );
                       },
                     ),
