@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-// TODO: Bug: Go down to list item 2, then click search, then down arrow twice
 // TODO: Handle mouse and keyboard interaction the way superhuman does
+// TODO: Click an item should use focus correctly
 // TODO: Make my own ListView that handles navigation and search bar
 //        FocusManager.instance.primaryFocus?.nearestScope
 //        FocusManager.instance.primaryFocus?.enclosingScope
@@ -172,6 +172,16 @@ class MainPageState extends State<MainPage> {
       }
       return KeyEventResult.handled;
     }
+    if (event.character != null &&
+        event.character!.isNotEmpty &&
+        event.logicalKey != LogicalKeyboardKey.tab &&
+        event.logicalKey != LogicalKeyboardKey.space) {
+      _getListFocusNode(_listRowIndex, 0).unfocus();
+      _searchFocusNode.requestFocus();
+      _searchController.text += event.character!;
+      return KeyEventResult.handled;
+    }
+
     return KeyEventResult.ignored;
   }
 
@@ -246,10 +256,9 @@ class MainPageState extends State<MainPage> {
                           },
                           subtitle:
                               Text('${routine.instances.length} instances'),
-                          tileColor: focusNode.hasFocus
-                              ? Colors.blue.withOpacity(0.1)
-                              : null,
-                          onTap: () => _openRoutinePage(routine),
+                          onTap: () {
+                            _openRoutinePage(routine);
+                          },
                         );
                       },
                     ),
