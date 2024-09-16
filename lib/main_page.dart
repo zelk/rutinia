@@ -270,7 +270,8 @@ class MainPageState extends State<MainPage> {
                       itemBuilder: (context, index) {
                         final routine = _filteredRoutines[index];
                         final focusNode = _getListFocusNode(index, 0);
-                        return Focus(
+                        return ListTile(
+                          title: Text(routine.name),
                           focusNode: focusNode,
                           onFocusChange: (hasFocus) {
                             if (hasFocus) {
@@ -285,22 +286,12 @@ class MainPageState extends State<MainPage> {
                               }
                             }
                           },
-                          child: ListTile(
-                            title: Text(routine.name),
-                            onFocusChange: (hasFocus) {
-                              if (hasFocus) {
-                                print('Focus on ListTile $index');
-                              } else {
-                                print('Unfocus on ListTile $index');
-                              }
-                            },
-                            subtitle:
-                                Text('${routine.instances.length} instances'),
-                            tileColor: focusNode.hasFocus
-                                ? Colors.blue.withOpacity(0.1)
-                                : null,
-                            onTap: () => _openRoutinePage(routine),
-                          ),
+                          subtitle:
+                              Text('${routine.instances.length} instances'),
+                          tileColor: focusNode.hasFocus
+                              ? Colors.blue.withOpacity(0.1)
+                              : null,
+                          onTap: () => _openRoutinePage(routine),
                         );
                       },
                     ),
