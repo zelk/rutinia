@@ -70,13 +70,14 @@ class MainPageState extends State<MainPage> {
   FocusNode _getListFocusNode(int row, int col) {
     assert(row >= 0 && col >= 0);
     if (row > _listFocusNodes.length - 1) {
-      // TODO: I may need to generate more than one. Check diff!!!
+      // TODO: I will need to generate more than one. Check diff!!!
       _listFocusNodes.add(List.generate(
         _numColumns,
         (_) => FocusNode(),
       ));
     }
-    assert(col < _listFocusNodes[row].length); // No dynamic column addition
+    // No dynamic column addition supported:
+    assert(col < _listFocusNodes[row].length);
     return _listFocusNodes[row][col];
   }
 
