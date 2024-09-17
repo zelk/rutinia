@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 // TODO: I PROBABLY NEED A LOT OF SETSTATE CALLS IN THIS WIDGET!!!
 
+// TODO: Add support for columns
+
 // TODO: Rename to ZelkFilteredListView???
 
 // TODO: Consider if I should add <T> to the widget.
@@ -43,22 +45,12 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final FocusScopeNode _listFocusScopeNode = FocusScopeNode();
-  final int _numColumns = 3;
-  late List<List<FocusNode>> _listFocusNodes;
   int _listRowIndex = -1;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(() => widget.filter(_searchController.text));
-    _listFocusNodes = List.generate(
-      1, // TODO: Is it better to generate more from the get go?
-      // Actually, it might be best to do lazy initialization.
-      (_) => List.generate(
-        _numColumns,
-        (_) => FocusNode(),
-      ),
-    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
     });
@@ -69,26 +61,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
     _listFocusScopeNode.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
-    for (var list in _listFocusNodes) {
-      for (var node in list) {
-        node.dispose();
-      }
-    }
     super.dispose();
-  }
-
-  FocusNode _getListFocusNode(int row, int col) {
-    assert(row >= 0 && col >= 0);
-    if (row > _listFocusNodes.length - 1) {
-      // TODO: I will need to generate more than one. Check diff!!!
-      _listFocusNodes.add(List.generate(
-        _numColumns,
-        (_) => FocusNode(),
-      ));
-    }
-    // No dynamic column addition supported:
-    assert(col < _listFocusNodes[row].length);
-    return _listFocusNodes[row][col];
   }
 
   KeyEventResult _handleSearchFocusKeyPress(
@@ -98,7 +71,9 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
         event is KeyDownEvent) {
       if (widget.itemCount > 0) {
         _listFocusScopeNode.requestFocus();
-        _getListFocusNode(0, 0).requestFocus();
+        FocusTraversalGroup.of(context)
+            .findFirstFocus(_listFocusScopeNode)
+            ?.requestFocus();
       }
       return KeyEventResult.handled;
     }
@@ -116,7 +91,9 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_searchController.selection.baseOffset ==
           _searchController.text.length) {
-        _getListFocusNode(0, 0).requestFocus();
+        FocusTraversalGroup.of(context)
+            .findFirstFocus(_listFocusScopeNode)
+            ?.requestFocus();
         return KeyEventResult.handled;
       }
     }
@@ -146,7 +123,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
             .focusedChild
             ?.focusInDirection(TraversalDirection.up);
       } else {
-        _getListFocusNode(_listRowIndex, 0).unfocus();
+        _listFocusScopeNode.unfocus();
         _searchFocusNode.requestFocus();
       }
       return KeyEventResult.handled;
@@ -166,7 +143,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
         event.character!.isNotEmpty &&
         event.logicalKey != LogicalKeyboardKey.tab &&
         event.logicalKey != LogicalKeyboardKey.space) {
-      _getListFocusNode(_listRowIndex, 0).unfocus();
+      _listFocusScopeNode.unfocus();
       _searchFocusNode.requestFocus();
       _searchController.text += event.character!;
       return KeyEventResult.handled;
@@ -206,8 +183,6 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
                     : null,
                 border: const OutlineInputBorder(),
               ),
-              // TODO: Do I really need both this and the listener in initState?
-              //              onChanged: widget.filter(_searchController.text),
             ),
           ),
         ),
@@ -224,9 +199,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
                 : ListView.builder(
                     itemCount: widget.itemCount,
                     itemBuilder: (context, index) {
-                      final focusNode = _getListFocusNode(index, 0);
                       return Focus(
-                          focusNode: focusNode,
                           onFocusChange: (hasFocus) {
                             if (hasFocus) {
                               setState(() {
