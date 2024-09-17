@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'models.dart';
 import 'instance_page.dart';
 
-// TODO: Add keyboard shortcuts for the routine page
+// TODO: Implement ZelkSearchableListView for the instances
 // TODO: Add a "+" button that allows the user to add a new instance and how to do keyboard shortcuts for that
 // TODO: Add a way to edit the routine
 // TODO: Add a way to delete the routine

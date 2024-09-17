@@ -5,7 +5,9 @@ import 'routine_page.dart';
 
 // TODO: Apply ZelkSearchableListView to all pages.
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
-// TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
+// TODO: Add a way to edit the routine
+// TODO: Add a way to delete the routine
+// TODO: Add a way to duplicate the routine
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});

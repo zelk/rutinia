@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// TODO: I PROBABLY NEED A LOT OF SETSTATE CALLS IN THIS WIDGET!!!
+// TODO: Tab key in search field should move focus to the list, after "X"
 
 // TODO: Add support for columns
 
 // TODO: Rename to ZelkFilteredListView???
-
-// TODO: Consider if I should add <T> to the widget.
 
 // TODO: Space does not work to activate items, likely because of what has focus
 
