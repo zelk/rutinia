@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/zelk_searchable_list_view.dart';
 import 'models.dart';
 import 'instance_page.dart';
 
@@ -20,6 +21,34 @@ class RoutinePage extends StatefulWidget {
 }
 
 class _RoutinePageState extends State<RoutinePage> {
+  late List<RoutineInstance> _allItems;
+  late List<RoutineInstance> _filteredItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _allItems = widget.routine.instances;
+    _filteredItems = _allItems;
+  }
+
+  void _openInstancePage(RoutineInstance instance) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InstancePage(instance: instance),
+      ),
+    );
+  }
+
+  void _filterItems(String value) {
+    setState(() {
+      _filteredItems = _allItems
+          .where((instance) =>
+              instance.name.toLowerCase().contains(value.toLowerCase()))
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,37 +69,21 @@ class _RoutinePageState extends State<RoutinePage> {
               ),
             ),
           ),
-          // Search box
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search instances',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                // TODO: Implement search functionality
-              },
-            ),
-          ),
-          // List of instances
           Expanded(
-            child: ListView.builder(
-              itemCount: widget.routine.instances.length,
-              itemBuilder: (context, index) {
-                final instance = widget.routine.instances[index];
+            child: ZelkSearchableListView(
+              itemCount: _filteredItems.length,
+              filter: _filterItems,
+              onItemTap: (index) {
+                _openInstancePage(_filteredItems[index]);
+              },
+              itemBuilder: (context, index, hasFocus) {
+                final instance = _filteredItems[index];
                 return ListTile(
                   title: Text(instance.name),
                   subtitle: Text('Due: ${instance.dueDate.toString()}'),
+                  tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => InstancePage(instance: instance),
-                      ),
-                    );
+                    _openInstancePage(instance);
                   },
                 );
               },
