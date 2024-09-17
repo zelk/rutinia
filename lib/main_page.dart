@@ -3,6 +3,7 @@ import 'widgets/zelk_searchable_list_view.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
+// TODO: Apply ZelkSearchableListView to all pages.
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
 
@@ -60,7 +61,6 @@ class MainPageState extends State<MainPage> {
               title: Text(routine.name),
               subtitle: Text('${routine.instances.length} instances'),
               tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
-// TODO: Where do I put this?
               onTap: () {
                 _openRoutinePage(routine);
               },
