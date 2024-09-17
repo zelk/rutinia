@@ -3,18 +3,6 @@ import 'widgets/zelk_searchable_list_view.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-// TODO: Make my own ListView that handles navigation and search bar
-// TODO: Handle mouse and keyboard interaction the way superhuman does
-// TODO: Click an item should use focus correctly
-// TODO: Check ideas below when needed:
-// DirectionalFocusTraversalPolicyMixin may be good with many columns where
-//   some rows are missing some
-// https://medium.com/@omlondhe/keyboard-focus-in-flutter-9fd28af0672
-// FocusManager.instance.primaryFocus?.nearestScope
-// FocusManager.instance.primaryFocus?.enclosingScope
-// It seems as if ChatGPT 1o mini often adds controllers (and possibly
-// focus nodes) to the model classes. It may be something to consider, unless
-// it takes up too much resources if I load a lot of data.
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a "+" button that allows the user to add a new routine and how to do keyboard shortcuts for that
 
@@ -71,8 +59,8 @@ class MainPageState extends State<MainPage> {
             return ListTile(
               title: Text(routine.name),
               subtitle: Text('${routine.instances.length} instances'),
-// TODO: Where do I put this?
               tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
+// TODO: Where do I put this?
               onTap: () {
                 _openRoutinePage(routine);
               },
