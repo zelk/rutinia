@@ -17,14 +17,14 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
-  late List<Routine> _allRoutines;
-  late List<Routine> _filteredRoutines;
+  late List<Routine> _allItems;
+  late List<Routine> _filteredItems;
 
   @override
   void initState() {
     super.initState();
-    _allRoutines = DummyDataGenerator.generateRoutines();
-    _filteredRoutines = _allRoutines;
+    _allItems = DummyDataGenerator.generateRoutines();
+    _filteredItems = _allItems;
   }
 
   void _openRoutinePage(Routine routine) {
@@ -38,7 +38,7 @@ class MainPageState extends State<MainPage> {
 
   void _filterRoutines(String value) {
     setState(() {
-      _filteredRoutines = _allRoutines
+      _filteredItems = _allItems
           .where((routine) =>
               routine.name.toLowerCase().contains(value.toLowerCase()))
           .toList();
@@ -52,13 +52,13 @@ class MainPageState extends State<MainPage> {
         title: const Text('Routines'),
       ),
       body: ZelkSearchableListView(
-          itemCount: _filteredRoutines.length,
+          itemCount: _filteredItems.length,
           filter: _filterRoutines,
           onItemTap: (index) {
-            _openRoutinePage(_filteredRoutines[index]);
+            _openRoutinePage(_filteredItems[index]);
           },
           itemBuilder: (context, index, hasFocus) {
-            final routine = _filteredRoutines[index];
+            final routine = _filteredItems[index];
             return ListTile(
               title: Text(routine.name),
               subtitle: Text('${routine.instances.length} instances'),
