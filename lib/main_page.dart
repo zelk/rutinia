@@ -36,7 +36,7 @@ class MainPageState extends State<MainPage> {
     );
   }
 
-  void _filterRoutines(String value) {
+  void _filterItems(String value) {
     setState(() {
       _filteredItems = _allItems
           .where((routine) =>
@@ -53,7 +53,7 @@ class MainPageState extends State<MainPage> {
       ),
       body: ZelkSearchableListView(
           itemCount: _filteredItems.length,
-          filter: _filterRoutines,
+          filter: _filterItems,
           onItemTap: (index) {
             _openRoutinePage(_filteredItems[index]);
           },
