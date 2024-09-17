@@ -3,7 +3,6 @@ import 'widgets/zelk_searchable_list_view.dart';
 import 'models.dart';
 import 'instance_page.dart';
 
-// TODO: Implement ZelkSearchableListView for the instances
 // TODO: Add a "+" button that allows the user to add a new instance and how to do keyboard shortcuts for that
 // TODO: Add a way to edit the routine
 // TODO: Add a way to delete the routine
