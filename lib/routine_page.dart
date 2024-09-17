@@ -10,16 +10,21 @@ import 'instance_page.dart';
 // TODO: Add a way to move the routine up or down the list
 // TODO: Add a way to move the routine to a different list
 
-class RoutinePage extends StatelessWidget {
+class RoutinePage extends StatefulWidget {
   final Routine routine;
 
   const RoutinePage({super.key, required this.routine});
 
   @override
+  State<RoutinePage> createState() => _RoutinePageState();
+}
+
+class _RoutinePageState extends State<RoutinePage> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${routine.name} Routine'),
+        title: Text('${widget.routine.name} Routine'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,9 +58,9 @@ class RoutinePage extends StatelessWidget {
           // List of instances
           Expanded(
             child: ListView.builder(
-              itemCount: routine.instances.length,
+              itemCount: widget.routine.instances.length,
               itemBuilder: (context, index) {
-                final instance = routine.instances[index];
+                final instance = widget.routine.instances[index];
                 return ListTile(
                   title: Text(instance.name),
                   subtitle: Text('Due: ${instance.dueDate.toString()}'),
