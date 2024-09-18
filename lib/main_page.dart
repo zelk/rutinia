@@ -3,7 +3,7 @@ import 'widgets/zelk_searchable_list_view.dart';
 import 'models.dart';
 import 'routine_page.dart';
 
-// TODO: Apply ZelkSearchableListView to all pages.
+// TODO: Apply ZelkFilteredListView to all pages.
 // TODO: Implement a breadcrumb navigation system that allows the user to go back to the main page by pressing the back button
 // TODO: Add a way to edit the routine
 // TODO: Add a way to delete the routine
@@ -51,7 +51,7 @@ class MainPageState extends State<MainPage> {
       appBar: AppBar(
         title: const Text('Routines'),
       ),
-      body: ZelkSearchableListView(
+      body: ZelkFilteredListView(
           itemCount: _filteredItems.length,
           filter: _filterItems,
           onItemTap: (index) {

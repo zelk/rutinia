@@ -69,7 +69,7 @@ class _RoutinePageState extends State<RoutinePage> {
             ),
           ),
           Expanded(
-            child: ZelkSearchableListView(
+            child: ZelkFilteredListView(
               itemCount: _filteredItems.length,
               filter: _filterItems,
               onItemTap: (index) {

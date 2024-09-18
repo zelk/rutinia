@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// TODO: Tab key in search field should move focus to the list, after "X"
+// TODO: Tab key in filter text field should move focus to the list, after "X"
 
 // TODO: Add support for columns
 
@@ -21,14 +21,14 @@ import 'package:flutter/services.dart';
 // focus nodes) to the model classes. It may be something to consider, unless
 // it takes up too much resources if I load a lot of data.
 
-class ZelkSearchableListView extends StatefulWidget {
+class ZelkFilteredListView extends StatefulWidget {
   final int itemCount;
   final Function(String) filter;
   final Function(int index) onItemTap;
   final Widget Function(BuildContext context, int index, bool hasFocus)
       itemBuilder;
 
-  const ZelkSearchableListView(
+  const ZelkFilteredListView(
       {super.key,
       required this.itemCount,
       required this.filter,
@@ -36,33 +36,34 @@ class ZelkSearchableListView extends StatefulWidget {
       required this.itemBuilder});
 
   @override
-  ZelkSearchableListViewState createState() => ZelkSearchableListViewState();
+  ZelkFilteredListViewState createState() => ZelkFilteredListViewState();
 }
 
-class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
+class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
+  final TextEditingController _textFieldController = TextEditingController();
+  final FocusNode _textFieldFocusNode = FocusNode();
   final FocusScopeNode _listFocusScopeNode = FocusScopeNode();
   int _listRowIndex = -1;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() => widget.filter(_searchController.text));
+    _textFieldController
+        .addListener(() => widget.filter(_textFieldController.text));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_searchFocusNode);
+      FocusScope.of(context).requestFocus(_textFieldFocusNode);
     });
   }
 
   @override
   void dispose() {
     _listFocusScopeNode.dispose();
-    _searchController.dispose();
-    _searchFocusNode.dispose();
+    _textFieldController.dispose();
+    _textFieldFocusNode.dispose();
     super.dispose();
   }
 
-  KeyEventResult _handleSearchFocusKeyPress(
+  KeyEventResult _handleTextFieldFocusKeyPress(
       BuildContext context, KeyEvent event) {
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
@@ -77,8 +78,8 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
     }
     if (event.logicalKey == LogicalKeyboardKey.escape &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
-      if (_searchController.text.isNotEmpty) {
-        _searchController.clear();
+      if (_textFieldController.text.isNotEmpty) {
+        _textFieldController.clear();
         widget.filter('');
       } else {
         Navigator.of(context).maybePop();
@@ -87,8 +88,8 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
-      if (_searchController.selection.baseOffset ==
-          _searchController.text.length) {
+      if (_textFieldController.selection.baseOffset ==
+          _textFieldController.text.length) {
         FocusTraversalGroup.of(context)
             .findFirstFocus(_listFocusScopeNode)
             ?.requestFocus();
@@ -110,7 +111,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
     }
     if (event.logicalKey == LogicalKeyboardKey.escape &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
-      _searchFocusNode.requestFocus();
+      _textFieldFocusNode.requestFocus();
       FocusScope.of(context).focusedChild?.unfocus();
       return KeyEventResult.handled;
     }
@@ -122,7 +123,7 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
             ?.focusInDirection(TraversalDirection.up);
       } else {
         _listFocusScopeNode.unfocus();
-        _searchFocusNode.requestFocus();
+        _textFieldFocusNode.requestFocus();
       }
       return KeyEventResult.handled;
     }
@@ -142,8 +143,8 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
         event.logicalKey != LogicalKeyboardKey.tab &&
         event.logicalKey != LogicalKeyboardKey.space) {
       _listFocusScopeNode.unfocus();
-      _searchFocusNode.requestFocus();
-      _searchController.text += event.character!;
+      _textFieldFocusNode.requestFocus();
+      _textFieldController.text += event.character!;
       return KeyEventResult.handled;
     }
 
@@ -159,22 +160,22 @@ class ZelkSearchableListViewState extends State<ZelkSearchableListView> {
           padding: const EdgeInsets.all(8.0),
           child: FocusScope(
             onKeyEvent: (node, event) {
-              return _handleSearchFocusKeyPress(context, event);
+              return _handleTextFieldFocusKeyPress(context, event);
             },
             child: TextField(
               autofocus: true,
-              controller: _searchController,
-              focusNode: _searchFocusNode,
+              controller: _textFieldController,
+              focusNode: _textFieldFocusNode,
               decoration: InputDecoration(
-                hintText: 'Search routines',
+                hintText: 'Filter items',
                 hintStyle: TextStyle(color: Colors.grey[400]),
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
+                suffixIcon: _textFieldController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
                         tooltip: 'Esc',
                         onPressed: () {
-                          _searchController.clear();
+                          _textFieldController.clear();
                           setState(() {});
                         },
                       )
