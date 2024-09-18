@@ -69,7 +69,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
       if (widget.itemCount > 0) {
         _listFocusScopeNode.requestFocus();
         FocusTraversalGroup.of(context)
-            .findFirstFocus(_listFocusScopeNode)
+            .findFirstFocus(_listFocusScopeNode, ignoreCurrentFocus: true)
             ?.requestFocus();
       }
       return KeyEventResult.handled;
@@ -89,7 +89,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
       if (_textFieldController.selection.baseOffset ==
           _textFieldController.text.length) {
         FocusTraversalGroup.of(context)
-            .findFirstFocus(_listFocusScopeNode)
+            .findFirstFocus(_listFocusScopeNode, ignoreCurrentFocus: true)
             ?.requestFocus();
         return KeyEventResult.handled;
       }

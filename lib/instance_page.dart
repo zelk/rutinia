@@ -1,40 +1,54 @@
 import 'package:flutter/material.dart';
+import 'widgets/zelk_filtered_list_view.dart';
 import 'models.dart';
 
-class InstancePage extends StatelessWidget {
+class InstancePage extends StatefulWidget {
   final RoutineInstance instance;
 
   const InstancePage({super.key, required this.instance});
 
   @override
+  State<InstancePage> createState() => _InstancePageState();
+}
+
+class _InstancePageState extends State<InstancePage> {
+  late List<ActionInstance> _allItems;
+  late List<ActionInstance> _filteredItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _allItems = widget.instance.actionInstances;
+    _filteredItems = _allItems;
+  }
+
+  void _filterItems(String value) {
+    setState(() {
+      _filteredItems = _allItems
+          .where((instance) =>
+              instance.comment.toLowerCase().contains(value.toLowerCase()) ||
+              instance.action.name.toLowerCase().contains(value.toLowerCase()))
+          .toList();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(instance.name),
+        title: Text(widget.instance.name),
       ),
       body: Column(
         children: [
-          // Search box
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search actions',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                // TODO: Implement search functionality
-              },
-            ),
-          ),
-          // List of actions
           Expanded(
-            child: ListView.builder(
-              itemCount: instance.actionInstances.length,
-              itemBuilder: (context, index) {
-                final actionInstance = instance.actionInstances[index];
+            child: ZelkFilteredListView(
+              itemCount: _filteredItems.length,
+              filter: _filterItems,
+              onItemTap: (index) {},
+              itemBuilder: (context, index, hasFocus) {
+                final actionInstance = _filteredItems[index];
                 return ListTile(
+                  tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
                   leading: Checkbox(
                     value: actionInstance.isCompleted,
                     onChanged: (bool? value) {
