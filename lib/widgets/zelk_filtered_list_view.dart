@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 
 // TODO: Add support for columns
 
-// TODO: Rename to ZelkFilteredListView???
-
 // TODO: Space does not work to activate items, likely because of what has focus
 
 // TODO: Handle mouse and keyboard interaction the way superhuman does

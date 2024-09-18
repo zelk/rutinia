@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/zelk_searchable_list_view.dart';
+import 'widgets/zelk_filtered_list_view.dart';
 import 'models.dart';
 import 'instance_page.dart';
 
