@@ -71,21 +71,25 @@ class _RoutinePageState extends State<RoutinePage> {
           Expanded(
             child: ZelkFilteredListView(
               itemCount: _filteredItems.length,
+              columnCount: 1,
               filter: _filterItems,
-              onItemTap: (index) {
-                _openInstancePage(_filteredItems[index]);
+              onItemTap: (rowIndex) {
+                _openInstancePage(_filteredItems[rowIndex]);
               },
-              itemBuilder: (context, index, hasFocus) {
-                final instance = _filteredItems[index];
-                return ListTile(
-                  title: Text(instance.name),
-                  subtitle: Text('Due: ${instance.dueDate.toString()}'),
-                  tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
-                  onTap: () {
-                    _openInstancePage(instance);
-                  },
-                );
-              },
+              itemBuilders: [
+                (context, rowIndex, rowHasFocus, columnIndex, columnHasFocus) {
+                  final instance = _filteredItems[rowIndex];
+                  return ListTile(
+                    title: Text(instance.name),
+                    subtitle: Text('Due: ${instance.dueDate.toString()}'),
+                    tileColor:
+                        rowHasFocus ? Colors.blue.withOpacity(0.5) : null,
+                    onTap: () {
+                      _openInstancePage(instance);
+                    },
+                  );
+                }
+              ],
             ),
           ),
         ],

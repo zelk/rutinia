@@ -43,28 +43,33 @@ class _InstancePageState extends State<InstancePage> {
           Expanded(
             child: ZelkFilteredListView(
               itemCount: _filteredItems.length,
+              columnCount: 1,
               filter: _filterItems,
-              onItemTap: (index) {},
-              itemBuilder: (context, index, hasFocus) {
-                final actionInstance = _filteredItems[index];
-                return ListTile(
-                  tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
-                  leading: Checkbox(
-                    value: actionInstance.isCompleted,
-                    onChanged: (bool? value) {
-                      // TODO: Implement checkbox functionality
-                    },
-                  ),
-                  title: Text(actionInstance.action.name),
-                  subtitle: Text('Assignee: ${actionInstance.assigneeUserId}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.comment),
-                    onPressed: () {
-                      // TODO: Implement comments functionality
-                    },
-                  ),
-                );
-              },
+              onItemTap: (rowIndex) {},
+              itemBuilders: [
+                (context, rowIndex, rowHasFocus, columnIndex, columnHasFocus) {
+                  final actionInstance = _filteredItems[rowIndex];
+                  return ListTile(
+                    tileColor:
+                        rowHasFocus ? Colors.blue.withOpacity(0.5) : null,
+                    leading: Checkbox(
+                      value: actionInstance.isCompleted,
+                      onChanged: (bool? value) {
+                        // TODO: Implement checkbox functionality
+                      },
+                    ),
+                    title: Text(actionInstance.action.name),
+                    subtitle:
+                        Text('Assignee: ${actionInstance.assigneeUserId}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.comment),
+                      onPressed: () {
+                        // TODO: Implement comments functionality
+                      },
+                    ),
+                  );
+                }
+              ],
             ),
           ),
         ],

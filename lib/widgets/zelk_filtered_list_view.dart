@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// TODO: Add Focus for each column
+
+// TODO: Add right and left arrow keys to move between columns
+
+// TODO: Keep track of selected column, adding _listColumnIndex
+
 // TODO: Tab key in filter text field should move focus to the list, after "X"
 
 // TODO: Add support for columns
@@ -21,17 +27,21 @@ import 'package:flutter/services.dart';
 
 class ZelkFilteredListView extends StatefulWidget {
   final int itemCount;
+  final int columnCount;
   final Function(String) filter;
-  final Function(int index) onItemTap;
-  final Widget Function(BuildContext context, int index, bool hasFocus)
-      itemBuilder;
+  final Function(int rowIndex) onItemTap;
+  final List<
+      Widget Function(BuildContext context, int rowIndex, bool rowHasFocus,
+          int columnIndex, bool columnHasFocus)> itemBuilders;
 
-  const ZelkFilteredListView(
-      {super.key,
-      required this.itemCount,
-      required this.filter,
-      required this.onItemTap,
-      required this.itemBuilder});
+  const ZelkFilteredListView({
+    super.key,
+    required this.itemCount,
+    required this.columnCount,
+    required this.filter,
+    required this.onItemTap,
+    required this.itemBuilders,
+  });
 
   @override
   ZelkFilteredListViewState createState() => ZelkFilteredListViewState();
@@ -42,6 +52,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
   final FocusNode _textFieldFocusNode = FocusNode();
   final FocusScopeNode _listFocusScopeNode = FocusScopeNode();
   int _listRowIndex = -1;
+  int _listColumnIndex = 0;
 
   @override
   void initState() {
@@ -84,6 +95,14 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
       }
       return KeyEventResult.handled;
     }
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_textFieldController.selection.baseOffset ==
+          _textFieldController.text.length) {
+        _textFieldFocusNode.focusInDirection(TraversalDirection.up);
+        return KeyEventResult.handled;
+      }
+    }
     if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_textFieldController.selection.baseOffset ==
@@ -119,7 +138,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         FocusScope.of(context)
             .focusedChild
             ?.focusInDirection(TraversalDirection.up);
-      } else {
+      } else if (event is KeyDownEvent) {
         _listFocusScopeNode.unfocus();
         _textFieldFocusNode.requestFocus();
       }
@@ -132,6 +151,28 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
           FocusScope.of(context)
               .focusedChild
               ?.focusInDirection(TraversalDirection.down);
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_listColumnIndex < widget.columnCount - 1) {
+        setState(() {
+          FocusScope.of(context)
+              .focusedChild
+              ?.focusInDirection(TraversalDirection.right);
+        });
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
+        (event is KeyDownEvent || event is KeyRepeatEvent)) {
+      if (_listColumnIndex > 0) {
+        setState(() {
+          FocusScope.of(context)
+              .focusedChild
+              ?.focusInDirection(TraversalDirection.left);
         });
       }
       return KeyEventResult.handled;
@@ -153,10 +194,10 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("$_listRowIndex"),
+        Text("$_listRowIndex, $_listColumnIndex"),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: FocusScope(
+          child: Focus(
             onKeyEvent: (node, event) {
               return _handleTextFieldFocusKeyPress(context, event);
             },
@@ -195,25 +236,88 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
                   )
                 : ListView.builder(
                     itemCount: widget.itemCount,
-                    itemBuilder: (context, index) {
+                    itemBuilder: (context, rowIndex) {
                       return Focus(
-                          onFocusChange: (hasFocus) {
-                            if (hasFocus) {
+                        canRequestFocus:
+                            false, // TODO: Change to skipTraversal true?
+                        onFocusChange: (hasFocus) {
+                          if (hasFocus) {
+                            setState(() {
+                              _listRowIndex = rowIndex;
+                            });
+                          } else {
+                            if (_listRowIndex == rowIndex) {
                               setState(() {
-                                _listRowIndex = index;
+                                _listRowIndex = -1;
                               });
-                            } else {
-                              if (_listRowIndex == index) {
-                                setState(() {
-                                  _listRowIndex = -1;
-                                });
-                              }
                             }
-                          },
-                          child: ExcludeFocus(
-                            child: widget.itemBuilder(
-                                context, index, _listRowIndex == index),
-                          ));
+                          }
+                        },
+                        child: Row(
+                          children:
+                              widget.itemBuilders.asMap().entries.map((entry) {
+                            int columnIndex = entry.key;
+                            var builder = entry.value;
+                            return Expanded(
+                              child: Focus(
+                                onFocusChange: (hasFocus) {
+                                  if (hasFocus) {
+                                    setState(() {
+                                      _listColumnIndex = columnIndex;
+                                    });
+                                  }
+                                },
+                                child: ExcludeFocus(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                          color: _listRowIndex == rowIndex &&
+                                                  _listColumnIndex ==
+                                                      columnIndex
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 2.0,
+                                        ),
+                                        bottom: BorderSide(
+                                          color: _listRowIndex == rowIndex &&
+                                                  _listColumnIndex ==
+                                                      columnIndex
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 2.0,
+                                        ),
+                                        left: BorderSide(
+                                          color: _listRowIndex == rowIndex &&
+                                                  _listColumnIndex ==
+                                                      columnIndex
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 2.0,
+                                        ),
+                                        right: BorderSide(
+                                          color: _listRowIndex == rowIndex &&
+                                                  _listColumnIndex ==
+                                                      columnIndex
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 2.0,
+                                        ),
+                                      ),
+                                    ),
+                                    child: builder(
+                                        context,
+                                        rowIndex,
+                                        _listRowIndex == rowIndex,
+                                        columnIndex,
+                                        _listColumnIndex == columnIndex),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      );
                     },
                   ),
           ),

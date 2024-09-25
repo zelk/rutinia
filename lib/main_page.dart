@@ -52,22 +52,35 @@ class MainPageState extends State<MainPage> {
         title: const Text('Routines'),
       ),
       body: ZelkFilteredListView(
-          itemCount: _filteredItems.length,
-          filter: _filterItems,
-          onItemTap: (index) {
-            _openRoutinePage(_filteredItems[index]);
-          },
-          itemBuilder: (context, index, hasFocus) {
-            final routine = _filteredItems[index];
+        itemCount: _filteredItems.length,
+        columnCount: 2,
+        filter: _filterItems,
+        onItemTap: (rowIndex) {
+          _openRoutinePage(_filteredItems[rowIndex]);
+        },
+        itemBuilders: [
+          (context, rowIndex, rowHasFocus, columnIndex, columnHasFocus) {
+            final routine = _filteredItems[rowIndex];
             return ListTile(
               title: Text(routine.name),
-              subtitle: Text('${routine.instances.length} instances'),
-              tileColor: hasFocus ? Colors.blue.withOpacity(0.5) : null,
+              tileColor: rowHasFocus ? Colors.blue.withOpacity(0.2) : null,
               onTap: () {
                 _openRoutinePage(routine);
               },
             );
-          }),
+          },
+          (context, rowIndex, rowHasFocus, columnIndex, columnHasFocus) {
+            final routine = _filteredItems[rowIndex];
+            return ListTile(
+              subtitle: Text('${routine.instances.length} instances'),
+              tileColor: rowHasFocus ? Colors.blue.withOpacity(0.2) : null,
+              onTap: () {
+                _openRoutinePage(routine);
+              },
+            );
+          },
+        ],
+      ),
     );
   }
 }
