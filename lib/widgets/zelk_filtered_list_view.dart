@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// TODO: SOMETHING JUST BROKE!!! Esc does not move focus to the text field
+//       Clicking items with the mouse does not work.
+
 // TODO: Add Focus for each column
-
-// TODO: Add right and left arrow keys to move between columns
-
-// TODO: Keep track of selected column, adding _listColumnIndex
-
-// TODO: Tab key in filter text field should move focus to the list, after "X"
-
-// TODO: Add support for columns
 
 // TODO: Space does not work to activate items, likely because of what has focus
 
