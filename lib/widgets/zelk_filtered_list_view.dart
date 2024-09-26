@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // TODO: SOMETHING JUST BROKE!!! Esc does not move focus to the text field
-//       Clicking items with the mouse does not work.
+//       Clicking items with the mouse does not work in the last page.
 
 // TODO: Add Focus for each column
 
@@ -124,7 +124,6 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
     if (event.logicalKey == LogicalKeyboardKey.escape &&
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       _textFieldFocusNode.requestFocus();
-      FocusScope.of(context).focusedChild?.unfocus();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
@@ -134,7 +133,6 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
             .focusedChild
             ?.focusInDirection(TraversalDirection.up);
       } else if (event is KeyDownEvent) {
-        _listFocusScopeNode.unfocus();
         _textFieldFocusNode.requestFocus();
       }
       return KeyEventResult.handled;
@@ -176,7 +174,6 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         event.character!.isNotEmpty &&
         event.logicalKey != LogicalKeyboardKey.tab &&
         event.logicalKey != LogicalKeyboardKey.space) {
-      _listFocusScopeNode.unfocus();
       _textFieldFocusNode.requestFocus();
       _textFieldController.text += event.character!;
       return KeyEventResult.handled;
