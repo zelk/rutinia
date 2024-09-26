@@ -92,7 +92,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_textFieldController.selection.baseOffset ==
           _textFieldController.text.length) {
-        FocusManager.instance.rootScope.focusInDirection(TraversalDirection.up);
+        _textFieldFocusNode.focusInDirection(TraversalDirection.up);
         return KeyEventResult.handled;
       }
     }
@@ -187,7 +187,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         Text("$_listRowIndex, $_listColumnIndex"),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: FocusScope(
+          child: Focus(
             onKeyEvent: (node, event) {
               return _handleTextFieldFocusKeyPress(context, event);
             },
