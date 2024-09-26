@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// TODO: SOMETHING JUST BROKE!!! Esc does not move focus to the text field
-//       Clicking items with the mouse does not work in the last page.
-
-// TODO: Add Focus for each column
-
+// TODO: On a page with columns, move to any column other than the first one,
+//       then move up to the search field and then move down again. Note that
+//       on the first row, the focus is on the first column, but after that,
+//       the focus is on the column that was focused previously.
 // TODO: Space does not work to activate items, likely because of what has focus
-
 // TODO: Handle mouse and keyboard interaction the way superhuman does
 // TODO: Click an item should use focus correctly
 // TODO: Check ideas below when needed:
@@ -94,7 +92,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         (event is KeyDownEvent || event is KeyRepeatEvent)) {
       if (_textFieldController.selection.baseOffset ==
           _textFieldController.text.length) {
-        _textFieldFocusNode.focusInDirection(TraversalDirection.up);
+        FocusManager.instance.rootScope.focusInDirection(TraversalDirection.up);
         return KeyEventResult.handled;
       }
     }
@@ -189,7 +187,7 @@ class ZelkFilteredListViewState extends State<ZelkFilteredListView> {
         Text("$_listRowIndex, $_listColumnIndex"),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Focus(
+          child: FocusScope(
             onKeyEvent: (node, event) {
               return _handleTextFieldFocusKeyPress(context, event);
             },
